@@ -33,7 +33,7 @@
 //
 // * "P2DT12H" is 2 days and 12 hours.
 //
-// Also, decimal fractions are supported to one decimal place. To comply with
+// Also, decimal fractions are supported up to nine decimal places. To comply with
 // the standard, only the last non-zero component is allowed to have a fraction.
 // For example
 //
