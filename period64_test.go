@@ -139,7 +139,9 @@ func Test_Period64_Sign_Abs_etc(t *testing.T) {
 }
 
 func Test_Period64_IsValid_false(t *testing.T) {
-	//g := NewGomegaWithT(t)
+	if !(Period64{}).isValid() {
+		t.Errorf("expected valid for P0D")
+	}
 
 	cases := []Period64{
 		{years: -1},
@@ -176,6 +178,8 @@ func Test_Period64_IsValid_false(t *testing.T) {
 		{seconds: 1, lastField: Hour},
 
 		{seconds: 1, lastField: Minute},
+
+		{fraction: 1, lastField: Second},
 	}
 
 	for _, p64 := range cases {

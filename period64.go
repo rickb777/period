@@ -15,6 +15,8 @@ import (
 // period, and additional information to track any fraction.
 // The precision is almost unlimited (int64 is used for all fields for calculations). Fractions
 // can hold up to 9 decimal places, therefore the finest grain is one nanosecond.
+//
+// Instances are immutable.
 type Period64 struct {
 	// always positive values
 	years, months, weeks, days, hours, minutes, seconds, fraction int64
@@ -24,12 +26,18 @@ type Period64 struct {
 
 	// the fraction applies to this field; no other fields to the right can be non-zero
 	lastField designator
+
+	// ISO-8601 representation
+	s string
 }
 
 //-------------------------------------------------------------------------------------------------
 
 // Period converts the period to ISO-8601 string form.
 func (p64 Period64) Period() Period {
+	if p64.s != "" {
+		return Period(p64.s)
+	}
 	return Period(p64.String())
 }
 
@@ -174,7 +182,7 @@ func (p64 Period64) isValid() bool {
 	}
 
 	switch p64.lastField {
-	case 0:
+	case Second:
 		return p64.fraction == 0
 	case Minute:
 		return p64.seconds == 0

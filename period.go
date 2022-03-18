@@ -12,7 +12,7 @@ package period
 // is 2.5 years.
 type Period string
 
-// String converts the period to ISO-8601 form.
+// String returns the string.
 func (p Period) String() string {
 	return string(p)
 }

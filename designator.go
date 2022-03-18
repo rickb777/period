@@ -4,7 +4,10 @@
 
 package period
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 type designator int
 
@@ -17,6 +20,27 @@ const (
 	Month
 	Year
 )
+
+func asDesignator(d byte, isHMS bool) (designator, error) {
+	switch d {
+	case 'S':
+		return Second, nil
+	case 'H':
+		return Hour, nil
+	case 'D':
+		return Day, nil
+	case 'W':
+		return Week, nil
+	case 'Y':
+		return Year, nil
+	case 'M':
+		if isHMS {
+			return Minute, nil
+		}
+		return Month, nil
+	}
+	return 0, fmt.Errorf("expected a number but found '%c'", d)
+}
 
 func (d designator) Byte() byte {
 	switch d {
