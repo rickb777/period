@@ -5,17 +5,19 @@
 package period
 
 import (
-	//. "github.com/onsi/gomega"
+	"fmt"
+	"strings"
 	"testing"
+	"time"
 )
 
 func Test_String(t *testing.T) {
 	//g := NewGomegaWithT(t)
 
-	cases := map[Period]Period64{
+	cases := map[Period]Period32{
 		// note: the negative cases are also covered (see below)
 
-		"P0D": Period64{},
+		"P0D": Period32{},
 
 		// ones
 		"P1Y":  {years: 1, lastField: Year},
@@ -100,9 +102,9 @@ func Test_String(t *testing.T) {
 }
 
 func Test_Period64_Sign_Abs_etc(t *testing.T) {
-	z := Period64{}
-	neg := Period64{years: 1, months: 2, weeks: 3, days: 4, hours: 5, minutes: 6, seconds: 7, fraction: 8, neg: true}
-	pos := Period64{years: 1, months: 2, weeks: 3, days: 4, hours: 5, minutes: 6, seconds: 7, fraction: 8, neg: false}
+	z := Period32{}
+	neg := Period32{years: 1, months: 2, weeks: 3, days: 4, hours: 5, minutes: 6, seconds: 7, fraction: 8, neg: true}
+	pos := Period32{years: 1, months: 2, weeks: 3, days: 4, hours: 5, minutes: 6, seconds: 7, fraction: 8, neg: false}
 
 	a := neg.Abs()
 	if a != pos {
@@ -139,11 +141,11 @@ func Test_Period64_Sign_Abs_etc(t *testing.T) {
 }
 
 func Test_Period64_IsValid_false(t *testing.T) {
-	if !(Period64{}).isValid() {
+	if !(Period32{}).isValid() {
 		t.Errorf("expected valid for P0D")
 	}
 
-	cases := []Period64{
+	cases := []Period32{
 		{years: -1},
 		{months: -1},
 		{weeks: -1},
@@ -187,4 +189,28 @@ func Test_Period64_IsValid_false(t *testing.T) {
 			t.Errorf("expected invalid for %+v", p64)
 		}
 	}
+}
+
+var london *time.Location // UTC + 1 hour during summer
+
+func init() {
+	london, _ = time.LoadLocation("Europe/London")
+}
+
+func info(i int, m ...interface{}) string {
+	if s, ok := m[0].(string); ok {
+		m[0] = i
+		return fmt.Sprintf("%d "+s, m...)
+	}
+	return fmt.Sprintf("%d %v", i, m[0])
+}
+
+func nospace(s string) string {
+	b := new(strings.Builder)
+	for _, r := range s {
+		if r != ' ' {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
 }

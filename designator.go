@@ -9,10 +9,11 @@ import (
 	"strconv"
 )
 
-type designator int
+type designator int8
 
 const (
-	Second designator = iota
+	_ designator = iota
+	Second
 	Minute
 	Hour
 	Day
@@ -39,7 +40,7 @@ func asDesignator(d byte, isHMS bool) (designator, error) {
 		}
 		return Month, nil
 	}
-	return 0, fmt.Errorf("expected a number but found '%c'", d)
+	return 0, fmt.Errorf("expected a designator Y, M, W, D, H, or S not '%c'", d)
 }
 
 func (d designator) Byte() byte {
@@ -58,6 +59,26 @@ func (d designator) Byte() byte {
 		return 'M'
 	case Year:
 		return 'Y'
+	}
+	panic(strconv.Itoa(int(d)))
+}
+
+func (d designator) field() string {
+	switch d {
+	case Second:
+		return "seconds"
+	case Minute:
+		return "minutes"
+	case Hour:
+		return "hours"
+	case Day:
+		return "days"
+	case Week:
+		return "weeks"
+	case Month:
+		return "months"
+	case Year:
+		return "years"
 	}
 	panic(strconv.Itoa(int(d)))
 }
