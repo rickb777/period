@@ -63,40 +63,47 @@ func (d designator) Byte() byte {
 	panic(strconv.Itoa(int(d)))
 }
 
-func (d designator) field() string {
-	switch d {
-	case Second:
-		return "seconds"
-	case Minute:
-		return "minutes"
-	case Hour:
-		return "hours"
-	case Day:
-		return "days"
-	case Week:
-		return "weeks"
-	case Month:
-		return "months"
-	case Year:
-		return "years"
-	}
-	panic(strconv.Itoa(int(d)))
-}
-
-func (d designator) IsOneOf(xx ...designator) bool {
-	for _, x := range xx {
-		if x == d {
-			return true
-		}
-	}
-	return false
-}
-
-func (d designator) IsNotOneOf(xx ...designator) bool {
-	for _, x := range xx {
-		if x == d {
-			return false
-		}
-	}
-	return true
-}
+//func (d designator) field() string {
+//	switch d {
+//	case Second:
+//		return "seconds"
+//	case Minute:
+//		return "minutes"
+//	case Hour:
+//		return "hours"
+//	case Day:
+//		return "days"
+//	case Week:
+//		return "weeks"
+//	case Month:
+//		return "months"
+//	case Year:
+//		return "years"
+//	}
+//	panic(strconv.Itoa(int(d)))
+//}
+//
+//func (d designator) min(other designator) designator {
+//	if d < other {
+//		return d
+//	}
+//	return other
+//}
+//
+//func (d designator) IsOneOf(xx ...designator) bool {
+//	for _, x := range xx {
+//		if x == d {
+//			return true
+//		}
+//	}
+//	return false
+//}
+//
+//func (d designator) IsNotOneOf(xx ...designator) bool {
+//	for _, x := range xx {
+//		if x == d {
+//			return false
+//		}
+//	}
+//	return true
+//}

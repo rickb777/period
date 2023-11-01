@@ -27,18 +27,21 @@
 //
 // * "PT30S" is thirty seconds.
 //
+// * "-PT30S" or "PT-30S" is minus thirty seconds (implies an "earlier" time).
+//
 // These can be combined, for example:
 //
 // * "P3Y6M4W1D" is three years, 6 months, 4 weeks and one day.
 //
 // * "P2DT12H" is 2 days and 12 hours.
 //
-// Also, decimal fractions are supported up to nine decimal places. To comply with
-// the standard, only the last non-zero component is allowed to have a fraction.
+// * "P1M-1D" is one month minus one day. Mixed signs may not be widely supported elsewhere.
+//
+// Also, decimal fractions are supported. To comply with the standard,
+// only the last non-zero component is allowed to have a fraction.
 // For example
 //
-// * "P2.5Y" is 2.5 years.
+// * "P2.5Y" or "P2,5Y" is 2.5 years.
 //
 // * "PT12M7.5S" is 12 minutes and 7.5 seconds.
-//
 package period
