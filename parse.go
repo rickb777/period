@@ -11,7 +11,7 @@ import (
 
 // MustParse is as per Parse except that it panics if the string cannot be parsed.
 // This is intended for setup code; don't use it for user inputs.
-func MustParse[S ~string](isoPeriod S) Period64 {
+func MustParse[S Period | string](isoPeriod S) Period64 {
 	p, err := Parse(isoPeriod)
 	if err != nil {
 		panic(err)
@@ -26,7 +26,7 @@ func MustParse[S ~string](isoPeriod S) Period64 {
 // The zero value can be represented in several ways: all of the following
 // are equivalent: "P0Y", "P0M", "P0W", "P0D", "PT0H", PT0M", PT0S", and "P0".
 // The canonical zero is "P0D".
-func Parse[S ~string](isoPeriod S) (Period64, error) {
+func Parse[S Period | string](isoPeriod S) (Period64, error) {
 	p := Period64{}
 	err := p.Parse(string(isoPeriod))
 	return p, err
@@ -56,7 +56,7 @@ func (period *Period64) Parse(isoPeriod string) error {
 	}
 
 	switch remaining {
-	case "P0", "P0Y", "P0M", "P0W", "P0D", "PT0H", "PT0M", "PT0S":
+	case "P0Y", "P0M", "P0W", "P0D", "PT0H", "PT0M", "PT0S":
 		period.neg = false
 		return nil // zero case
 	case "":
@@ -206,15 +206,6 @@ func scanDigits(s string) (string, int) {
 }
 
 const (
-	maxFractionDigits = 9
-	trailingZeros     = "000000000" // nine zeros
-)
-
-const (
 	noNumberFound      = -1
 	stringIsAllNumeric = -2
 )
-
-func isDigit(c rune) bool {
-	return ('0' <= c && c <= '9') || c == '.' || c == ','
-}

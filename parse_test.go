@@ -40,18 +40,19 @@ func TestParseErrors(t *testing.T) {
 		// integer overflow
 	}
 	for i, c := range cases {
-		p := Period64{}
-		ep := p.Parse(string(c.value))
+		_, ep := Parse(c.value)
 		g.Expect(ep).To(HaveOccurred(), info(i, c.value))
 		g.Expect(ep.Error()).To(Equal(c.expvalue+c.expected), info(i, c.value))
 
-		en := p.Parse("-" + string(c.value))
+		_, en := Parse("-" + c.value)
 		g.Expect(en).To(HaveOccurred(), info(i, c.value))
 		if c.expvalue != "" {
 			g.Expect(en.Error()).To(Equal("-"+c.expvalue+c.expected), info(i, c.value))
 		} else {
 			g.Expect(en.Error()).To(Equal(c.expected), info(i, c.value))
 		}
+
+		g.Expect(func() { MustParse(c.value) }).To(Panic())
 	}
 }
 
@@ -67,29 +68,26 @@ func TestParsePeriod(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	cases := []struct {
-		value    string
-		reversed string
+		value    Period
+		reversed Period
 		period   Period64
 	}{
 		// zero
-		{"P0D", "P0D", Period64{}},
-		// special zero cases: parse is not identity when reversed
-		{"P0", "P0D", Period64{}},
-		{"P0Y", "P0D", Period64{}},
-		{"P0M", "P0D", Period64{}},
-		{"P0W", "P0D", Period64{}},
-		{"PT0H", "P0D", Period64{}},
-		{"PT0M", "P0D", Period64{}},
-		{"PT0S", "P0D", Period64{}},
-		{"-P0D", "P0D", Period64{}},
-		{"-P0", "P0D", Period64{}},
-		{"-P0Y", "P0D", Period64{}},
-		{"-P0M", "P0D", Period64{}},
-		{"-P0W", "P0D", Period64{}},
-		{"-PT0H", "P0D", Period64{}},
-		{"-PT0M", "P0D", Period64{}},
-		{"-PT0S", "P0D", Period64{}},
-		{"+PT0S", "P0D", Period64{}},
+		{"P0D", CanonicalZero, Zero},
+		{"P0Y", CanonicalZero, Zero},
+		{"P0M", CanonicalZero, Zero},
+		{"P0W", CanonicalZero, Zero},
+		{"PT0H", CanonicalZero, Zero},
+		{"PT0M", CanonicalZero, Zero},
+		{"PT0S", CanonicalZero, Zero},
+		{"-P0D", CanonicalZero, Zero},
+		{"-P0Y", CanonicalZero, Zero},
+		{"-P0M", CanonicalZero, Zero},
+		{"-P0W", CanonicalZero, Zero},
+		{"-PT0H", CanonicalZero, Zero},
+		{"-PT0M", CanonicalZero, Zero},
+		{"-PT0S", CanonicalZero, Zero},
+		{"+PT0S", CanonicalZero, Zero},
 
 		// ones
 		{"P1Y", "P1Y", Period64{years: one}},
@@ -107,12 +105,10 @@ func TestParsePeriod(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		p := Period64{}
-		err := p.Parse(c.value)
+		p := MustParse(c.value)
 		s := info(i, c.value)
-		g.Expect(err).NotTo(HaveOccurred(), s)
 		g.Expect(p).To(Equal(c.period), s)
 		// reversal is usually expected to be an identity
-		g.Expect(p.String()).To(Equal(c.reversed), s+" reversed")
+		g.Expect(p.Period()).To(Equal(c.reversed), s+" reversed")
 	}
 }

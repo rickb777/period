@@ -4,6 +4,9 @@
 
 package period
 
+// CanonicalZero is the zero length period in one of its possible representations.
+const CanonicalZero Period = "P0D"
+
 // Period holds a period of time and provides conversion to/from ISO-8601 representations.
 // Therefore, there are seven fields: years, months, weeks, days, hours, minutes, and seconds.
 //
