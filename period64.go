@@ -32,11 +32,15 @@ var Zero = Period64{}
 //-------------------------------------------------------------------------------------------------
 
 // Period converts the period to ISO-8601 string form.
+// If there is a decimal fraction, it will be rendered using a decimal point separator
+// (not a comma).
 func (period Period64) Period() Period {
 	return Period(period.String())
 }
 
 // String converts the period to ISO-8601 string form.
+// If there is a decimal fraction, it will be rendered using a decimal point separator.
+// (not a comma).
 func (period Period64) String() string {
 	if period == Zero {
 		return "P0D"
@@ -77,7 +81,7 @@ func (period Period64) WriteTo(w io.Writer) (int64, error) {
 
 func writeField(w usefulWriter, field decimal, fieldDesignator designator) {
 	if field.value != 0 {
-		w.WriteString(field.Decimal().String())
+		w.WriteString(field.String())
 		w.WriteByte(fieldDesignator.Byte())
 	}
 }
@@ -196,46 +200,51 @@ func (period Period64) NormaliseSign() Period64 {
 	if period.years.value > 0 {
 		return period
 	} else if period.years.value < 0 {
-		return period.negateAllFields()
+		return period.flipSign()
 	}
 
 	if period.months.value > 0 {
 		return period
 	} else if period.months.value < 0 {
-		return period.negateAllFields()
+		return period.flipSign()
 	}
 
 	if period.weeks.value > 0 {
 		return period
 	} else if period.weeks.value < 0 {
-		return period.negateAllFields()
+		return period.flipSign()
 	}
 
 	if period.days.value > 0 {
 		return period
 	} else if period.days.value < 0 {
-		return period.negateAllFields()
+		return period.flipSign()
 	}
 
 	if period.hours.value > 0 {
 		return period
 	} else if period.hours.value < 0 {
-		return period.negateAllFields()
+		return period.flipSign()
 	}
 
 	if period.minutes.value > 0 {
 		return period
 	} else if period.minutes.value < 0 {
-		return period.negateAllFields()
+		return period.flipSign()
 	}
 
 	if period.seconds.value > 0 {
 		return period
 	} else if period.seconds.value < 0 {
-		return period.negateAllFields()
+		return period.flipSign()
 	}
 
 	return Zero
+}
+
+func (period Period64) flipSign() Period64 {
+	period.neg = !period.neg
+	return period.negateAllFields()
 }
 
 func (period Period64) negateAllFields() Period64 {
@@ -246,7 +255,6 @@ func (period Period64) negateAllFields() Period64 {
 	period.hours.value = -period.hours.value
 	period.minutes.value = -period.minutes.value
 	period.seconds.value = -period.seconds.value
-	period.neg = !period.neg
 	return period
 }
 

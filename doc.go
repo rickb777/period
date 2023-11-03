@@ -41,7 +41,7 @@
 // only the last non-zero component is allowed to have a fraction.
 // For example
 //
-// * "P2.5Y" or "P2,5Y" is 2.5 years.
+// * "P2.5Y" or "P2,5Y" is 2.5 years; both notations are allowed.
 //
 // * "PT12M7.5S" is 12 minutes and 7.5 seconds.
 package period

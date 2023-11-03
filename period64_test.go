@@ -26,7 +26,7 @@ func decS(s string) decimal {
 }
 
 func Test_String(t *testing.T) {
-	//g := NewGomegaWithT(t)
+	g := NewGomegaWithT(t)
 
 	cases := map[Period]Period64{
 		// note: the negative cases are also covered (see below)
@@ -82,26 +82,22 @@ func Test_String(t *testing.T) {
 	}
 
 	for expected, p64 := range cases {
-		sp1 := p64.Period()
-		if sp1 != expected {
-			t.Errorf("+ve got %s, expected %s", sp1, expected)
-		}
+		t.Run(fmt.Sprintf("%s %+v", expected, p64), func(t *testing.T) {
+			sp1 := p64.Period()
+			g.Expect(sp1).To(Equal(expected))
 
-		sp2 := p64.String()
-		if sp2 != expected.String() {
-			t.Errorf("+ve got %s, expected %s", sp2, expected)
-		}
+			sp2 := p64.String()
+			g.Expect(sp2).To(Equal(expected.String()))
 
-		if !p64.IsZero() {
-			sn := p64.Negate().Period()
-			ne := "-" + expected
-			if expected[0] == '-' {
-				ne = expected[1:]
+			if !p64.IsZero() {
+				sn := p64.Negate().Period()
+				ne := "-" + expected
+				if expected[0] == '-' {
+					ne = expected[1:]
+				}
+				g.Expect(sn).To(Equal(ne))
 			}
-			if sn != ne {
-				t.Errorf("-ve got %s, expected %s", sn, ne)
-			}
-		}
+		})
 	}
 }
 
@@ -187,8 +183,6 @@ func Test_NormaliseSign(t *testing.T) {
 		expected Period
 		input    Period64
 	}{
-		// note: the negative cases are also covered (see below)
-
 		{expected: "P0D"},
 
 		// ones unchanged
@@ -201,27 +195,35 @@ func Test_NormaliseSign(t *testing.T) {
 		{expected: "PT1S", input: Period64{seconds: one}},
 
 		// normalisation
-		{expected: "-P1Y", input: Period64{years: negOne}},
-		{expected: "-P1M", input: Period64{months: negOne}},
-		{expected: "-P1W", input: Period64{weeks: negOne}},
-		{expected: "-P1D", input: Period64{days: negOne}},
-		{expected: "-PT1H", input: Period64{hours: negOne}},
-		{expected: "-PT1M", input: Period64{minutes: negOne}},
-		{expected: "-PT1S", input: Period64{seconds: negOne}},
+		{expected: "P1Y", input: Period64{years: negOne, neg: true}},
+		{expected: "P1M", input: Period64{months: negOne, neg: true}},
+		{expected: "P1W", input: Period64{weeks: negOne, neg: true}},
+		{expected: "P1D", input: Period64{days: negOne, neg: true}},
+		{expected: "PT1H", input: Period64{hours: negOne, neg: true}},
+		{expected: "PT1M", input: Period64{minutes: negOne, neg: true}},
+		{expected: "PT1S", input: Period64{seconds: negOne, neg: true}},
+
+		{expected: "-P1Y", input: Period64{years: one, neg: true}},
+		{expected: "-P1M", input: Period64{months: one, neg: true}},
+		{expected: "-P1W", input: Period64{weeks: one, neg: true}},
+		{expected: "-P1D", input: Period64{days: one, neg: true}},
+		{expected: "-PT1H", input: Period64{hours: one, neg: true}},
+		{expected: "-PT1M", input: Period64{minutes: one, neg: true}},
+		{expected: "-PT1S", input: Period64{seconds: one, neg: true}},
 
 		// complex normalisation
-		{expected: "-PT1M1S", input: Period64{minutes: negOne, seconds: negOne}},
-		{expected: "-PT1M-1S", input: Period64{minutes: negOne, seconds: one}},
+		{expected: "-PT1M-1S", input: Period64{minutes: one, seconds: negOne, neg: true}},
+		{expected: "-PT1M1S", input: Period64{minutes: one, seconds: one, neg: true}},
 		{expected: "PT1M-1S", input: Period64{minutes: one, seconds: negOne}},
 
-		{expected: "-PT1H1M1S", input: Period64{hours: negOne, minutes: negOne, seconds: negOne}}, // 111
-		{expected: "-PT1H1M-1S", input: Period64{hours: negOne, minutes: negOne, seconds: one}},   // 110
-		{expected: "-PT1H-1M1S", input: Period64{hours: negOne, minutes: one, seconds: negOne}},   // 101
-		{expected: "-PT1H-1M-1S", input: Period64{hours: negOne, minutes: one, seconds: one}},     // 100
-		{expected: "PT1H-1M-1S", input: Period64{hours: one, minutes: negOne, seconds: negOne}},   // 011
-		{expected: "PT1H-1M1S", input: Period64{hours: one, minutes: negOne, seconds: one}},       // 010
-		{expected: "PT1H1M-1S", input: Period64{hours: one, minutes: one, seconds: negOne}},       // 001
-		{expected: "PT1H1M1S", input: Period64{hours: one, minutes: one, seconds: one}},           // 000
+		{expected: "PT1H1M1S", input: Period64{hours: negOne, minutes: negOne, seconds: negOne, neg: true}}, // 111
+		{expected: "PT1H1M-1S", input: Period64{hours: negOne, minutes: negOne, seconds: one, neg: true}},   // 110
+		{expected: "PT1H-1M1S", input: Period64{hours: negOne, minutes: one, seconds: negOne, neg: true}},   // 101
+		{expected: "PT1H-1M-1S", input: Period64{hours: negOne, minutes: one, seconds: one, neg: true}},     // 100
+		{expected: "PT1H-1M-1S", input: Period64{hours: one, minutes: negOne, seconds: negOne}},             // 011
+		{expected: "PT1H-1M1S", input: Period64{hours: one, minutes: negOne, seconds: one}},                 // 010
+		{expected: "PT1H1M-1S", input: Period64{hours: one, minutes: one, seconds: negOne}},                 // 001
+		{expected: "PT1H1M1S", input: Period64{hours: one, minutes: one, seconds: one}},                     // 000
 	}
 
 	for i, c := range cases {

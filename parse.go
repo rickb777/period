@@ -44,12 +44,11 @@ func (period *Period64) Parse(isoPeriod string) error {
 		return fmt.Errorf(`cannot parse a blank string as a period`)
 	}
 
-	*period = Period64{}
-	period.neg = false
+	p := Zero
 
 	remaining := isoPeriod
 	if remaining[0] == '-' {
-		period.neg = true
+		p.neg = true
 		remaining = remaining[1:]
 	} else if remaining[0] == '+' {
 		remaining = remaining[1:]
@@ -57,7 +56,7 @@ func (period *Period64) Parse(isoPeriod string) error {
 
 	switch remaining {
 	case "P0Y", "P0M", "P0W", "P0D", "PT0H", "PT0M", "PT0S":
-		period.neg = false
+		*period = Zero
 		return nil // zero case
 	case "":
 		return fmt.Errorf(`cannot parse a blank string as a period`)
@@ -102,19 +101,19 @@ func (period *Period64) Parse(isoPeriod string) error {
 
 			switch des {
 			case Year:
-				years, err = years.testAndSet(number, Year, &period.years, isoPeriod)
+				years, err = years.testAndSet(number, Year, &p.years, isoPeriod)
 			case Month:
-				months, err = months.testAndSet(number, Month, &period.months, isoPeriod)
+				months, err = months.testAndSet(number, Month, &p.months, isoPeriod)
 			case Week:
-				weeks, err = weeks.testAndSet(number, Week, &period.weeks, isoPeriod)
+				weeks, err = weeks.testAndSet(number, Week, &p.weeks, isoPeriod)
 			case Day:
-				days, err = days.testAndSet(number, Day, &period.days, isoPeriod)
+				days, err = days.testAndSet(number, Day, &p.days, isoPeriod)
 			case Hour:
-				hours, err = hours.testAndSet(number, Hour, &period.hours, isoPeriod)
+				hours, err = hours.testAndSet(number, Hour, &p.hours, isoPeriod)
 			case Minute:
-				minutes, err = minutes.testAndSet(number, Minute, &period.minutes, isoPeriod)
+				minutes, err = minutes.testAndSet(number, Minute, &p.minutes, isoPeriod)
 			case Second:
-				seconds, err = seconds.testAndSet(number, Second, &period.seconds, isoPeriod)
+				seconds, err = seconds.testAndSet(number, Second, &p.seconds, isoPeriod)
 			default:
 				panic(fmt.Errorf("unreachable %s: '%c'", isoPeriod, des.Byte()))
 			}
@@ -135,6 +134,7 @@ func (period *Period64) Parse(isoPeriod string) error {
 		return fmt.Errorf("%s: expected 'Y', 'M', 'W', 'D', 'H', 'M', or 'S' designator", isoPeriod)
 	}
 
+	*period = p.NormaliseSign()
 	return nil
 }
 

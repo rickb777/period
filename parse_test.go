@@ -5,6 +5,7 @@
 package period
 
 import (
+	"fmt"
 	. "github.com/onsi/gomega"
 	bigdecimal "github.com/shopspring/decimal"
 	"testing"
@@ -37,7 +38,6 @@ func TestParseErrors(t *testing.T) {
 		{"PT1HT1S", false, ": 'T' designator cannot occur more than once", "PT1HT1S"},
 		{"P0.1YT0.1S", false, ": 'Y' & 'S' only the last field can have a fraction", "P0.1YT0.1S"},
 		{"P", false, ": expected 'Y', 'M', 'W', 'D', 'H', 'M', or 'S' designator", "P"},
-		// integer overflow
 	}
 	for i, c := range cases {
 		_, ep := Parse(c.value)
@@ -99,16 +99,46 @@ func TestParsePeriod(t *testing.T) {
 		{"PT1S", "PT1S", Period64{seconds: one}},
 		{"+PT1S", "PT1S", Period64{seconds: one}},
 
+		// unusual case: treat this as a double negative
+		{"-P-1Y", "P1Y", Period64{years: one}},
+		{"-P-1M", "P1M", Period64{months: one}},
+		{"-P-1W", "P1W", Period64{weeks: one}},
+		{"-P-1D", "P1D", Period64{days: one}},
+		{"-PT-1H", "PT1H", Period64{hours: one}},
+		{"-PT-1M", "PT1M", Period64{minutes: one}},
+		{"-PT-1S", "PT1S", Period64{seconds: one}},
+
+		{"-P1Y", "-P1Y", Period64{years: one, neg: true}},
+		{"-P1M", "-P1M", Period64{months: one, neg: true}},
+		{"-P1W", "-P1W", Period64{weeks: one, neg: true}},
+		{"-P1D", "-P1D", Period64{days: one, neg: true}},
+		{"-PT1H", "-PT1H", Period64{hours: one, neg: true}},
+		{"-PT1M", "-PT1M", Period64{minutes: one, neg: true}},
+		{"-PT1S", "-PT1S", Period64{seconds: one, neg: true}},
+		{"-PT1S", "-PT1S", Period64{seconds: one, neg: true}},
+
+		{"P-1Y", "-P1Y", Period64{years: one, neg: true}},
+		{"P-1M", "-P1M", Period64{months: one, neg: true}},
+		{"P-1W", "-P1W", Period64{weeks: one, neg: true}},
+		{"P-1D", "-P1D", Period64{days: one, neg: true}},
+		{"PT-1H", "-PT1H", Period64{hours: one, neg: true}},
+		{"PT-1M", "-PT1M", Period64{minutes: one, neg: true}},
+		{"PT-1S", "-PT1S", Period64{seconds: one, neg: true}},
+		{"PT-1S", "-PT1S", Period64{seconds: one, neg: true}},
+
 		{"P1Y1M1W1DT1H1M1.111111111S", "P1Y1M1W1DT1H1M1.111111111S", Period64{years: one, months: one, weeks: one, days: one, hours: one, minutes: one, seconds: decS("1.111111111")}},
+		//{"-P1Y-1M-1W-1DT-1H-1M-1.111111111S", "P1Y1M1W1DT1H1M1.111111111S", Period64{years: negOne, months: negOne, weeks: negOne, days: negOne, hours: negOne, minutes: negOne, seconds: decS("-1.111111111")}},
 		{"P1Y-1M1W-1DT1H-1M1.111111111S", "P1Y-1M1W-1DT1H-1M1.111111111S", Period64{years: one, months: negOne, weeks: one, days: negOne, hours: one, minutes: negOne, seconds: decS("1.111111111")}},
 		{"-P1Y-1M1W-1DT1H-1M1.111111111S", "-P1Y-1M1W-1DT1H-1M1.111111111S", Period64{years: one, months: negOne, weeks: one, days: negOne, hours: one, minutes: negOne, seconds: decS("1.111111111"), neg: true}},
 	}
 
 	for i, c := range cases {
-		p := MustParse(c.value)
-		s := info(i, c.value)
-		g.Expect(p).To(Equal(c.period), s)
-		// reversal is usually expected to be an identity
-		g.Expect(p.Period()).To(Equal(c.reversed), s+" reversed")
+		t.Run(fmt.Sprintf("%d %s", i, c.value), func(t *testing.T) {
+			p := MustParse(c.value)
+			s := info(i, c.value)
+			g.Expect(p).To(Equal(c.period), s)
+			// reversal is usually expected to be an identity
+			g.Expect(p.Period()).To(Equal(c.reversed), s+" reversed")
+		})
 	}
 }
