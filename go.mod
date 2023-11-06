@@ -3,8 +3,8 @@ module github.com/rickb777/period
 go 1.21
 
 require (
+	github.com/govalues/decimal v0.1.15
 	github.com/onsi/gomega v1.29.0
-	github.com/shopspring/decimal v1.3.1
 )
 
 require (

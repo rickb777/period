@@ -6,8 +6,8 @@ package period
 
 import (
 	"fmt"
+	"github.com/govalues/decimal"
 	. "github.com/onsi/gomega"
-	bigdecimal "github.com/shopspring/decimal"
 	"testing"
 )
 
@@ -40,28 +40,29 @@ func TestParseErrors(t *testing.T) {
 		{"P", false, ": expected 'Y', 'M', 'W', 'D', 'H', 'M', or 'S' designator", "P"},
 	}
 	for i, c := range cases {
-		_, ep := Parse(c.value)
-		g.Expect(ep).To(HaveOccurred(), info(i, c.value))
-		g.Expect(ep.Error()).To(Equal(c.expvalue+c.expected), info(i, c.value))
+		t.Run(fmt.Sprintf("%d %s", i, c.value), func(t *testing.T) {
+			_, ep := Parse(c.value)
+			g.Expect(ep).To(HaveOccurred(), info(i, c.value))
+			g.Expect(ep.Error()).To(Equal(c.expvalue+c.expected), info(i, c.value))
 
-		_, en := Parse("-" + c.value)
-		g.Expect(en).To(HaveOccurred(), info(i, c.value))
-		if c.expvalue != "" {
-			g.Expect(en.Error()).To(Equal("-"+c.expvalue+c.expected), info(i, c.value))
-		} else {
-			g.Expect(en.Error()).To(Equal(c.expected), info(i, c.value))
-		}
+			_, en := Parse("-" + c.value)
+			g.Expect(en).To(HaveOccurred(), info(i, c.value))
+			if c.expvalue != "" {
+				g.Expect(en.Error()).To(Equal("-"+c.expvalue+c.expected), info(i, c.value))
+			} else {
+				g.Expect(en.Error()).To(Equal(c.expected), info(i, c.value))
+			}
 
-		g.Expect(func() { MustParse(c.value) }).To(Panic())
+			g.Expect(func() { MustParse(c.value) }).To(Panic())
+		})
 	}
 }
 
 //-------------------------------------------------------------------------------------------------
 
 var (
-	bigOne = bigdecimal.NewFromInt(1)
-	one    = decimal{value: 1}
-	negOne = decimal{value: -1}
+	one    = decimal.One
+	negOne = decimal.One.Neg()
 )
 
 func TestParsePeriod(t *testing.T) {

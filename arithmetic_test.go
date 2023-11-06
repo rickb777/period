@@ -52,9 +52,6 @@ func TestPeriodAddSubtract(t *testing.T) {
 
 		// cases needing borrow/carry
 		{"PT16M40S", "PT1000S", "PT33M20S", "P0D"},
-		//{"PT16M40S", "-PT1017S", "PT43S"},
-		//{"PT17M40S", "-PT1017S", "-PT17S"},
-		//{"P3Y3M3W3D", "-P1Y4M", "P1Y11M3W3D"},
 	}
 
 	for i, c := range cases {
@@ -62,10 +59,12 @@ func TestPeriodAddSubtract(t *testing.T) {
 			a := MustParse(c.one)
 			b := MustParse(c.two)
 
-			s := a.Add(b)
+			s, err := a.Add(b)
+			g.Expect(err).NotTo(HaveOccurred())
 			g.Expect(s).To(Equal(MustParse(c.sum)), info(i, "%s + %s = %s", c.one, c.two, s))
 
-			d := a.Subtract(b)
+			d, err := a.Subtract(b)
+			g.Expect(err).NotTo(HaveOccurred())
 			g.Expect(d).To(Equal(MustParse(c.difference)), info(i, "%s - %s = %s", c.one, c.two, d))
 		})
 	}

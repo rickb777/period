@@ -6,7 +6,7 @@ package period
 
 import (
 	"fmt"
-	bigdecimal "github.com/shopspring/decimal"
+	"github.com/govalues/decimal"
 )
 
 // MustParse is as per Parse except that it panics if the string cannot be parsed.
@@ -68,7 +68,7 @@ func (period *Period64) Parse(isoPeriod string) error {
 	remaining = remaining[1:]
 
 	var haveFraction bool
-	var number decimal
+	var number decimal.Decimal
 	var years, months, weeks, days, hours, minutes, seconds itemState
 	var des, previous designator
 	var err error
@@ -95,7 +95,7 @@ func (period *Period64) Parse(isoPeriod string) error {
 				return err
 			}
 
-			if haveFraction && number.value != 0 {
+			if haveFraction && number.Coef() != 0 {
 				return fmt.Errorf("%s: '%c' & '%c' only the last field can have a fraction", isoPeriod, previous.Byte(), des.Byte())
 			}
 
@@ -123,7 +123,7 @@ func (period *Period64) Parse(isoPeriod string) error {
 				return err
 			}
 
-			if number.exp < 0 {
+			if number.Scale() > 0 {
 				haveFraction = true
 				previous = des
 			}
@@ -148,7 +148,7 @@ const (
 	Set
 )
 
-func (i itemState) testAndSet(number decimal, des designator, result *decimal, original string) (itemState, error) {
+func (i itemState) testAndSet(number decimal.Decimal, des designator, result *decimal.Decimal, original string) (itemState, error) {
 	switch i {
 	case Unready:
 		return i, fmt.Errorf("%s: '%c' designator cannot occur here", original, des.Byte())
@@ -162,26 +162,26 @@ func (i itemState) testAndSet(number decimal, des designator, result *decimal, o
 
 //-------------------------------------------------------------------------------------------------
 
-func parseNextField(str, original string, isHMS bool) (decimal, designator, string, error) {
+func parseNextField(str, original string, isHMS bool) (decimal.Decimal, designator, string, error) {
 	number, i := scanDigits(str)
 	switch i {
 	case noNumberFound:
-		return zero, 0, "", fmt.Errorf("%s: expected a number but found '%c'", original, str[0])
+		return decimal.Zero, 0, "", fmt.Errorf("%s: expected a number but found '%c'", original, str[0])
 	case stringIsAllNumeric:
-		return zero, 0, "", fmt.Errorf("%s: missing designator at the end", original)
+		return decimal.Zero, 0, "", fmt.Errorf("%s: missing designator at the end", original)
 	}
 
-	dec, err := bigdecimal.NewFromString(number)
+	dec, err := decimal.Parse(number)
 	if err != nil {
 		panic(fmt.Errorf("unreachable: %s: %w", original, err))
 	}
 
 	des, err := asDesignator(str[i], isHMS)
 	if err != nil {
-		return zero, 0, "", fmt.Errorf("%s: %w", original, err)
+		return decimal.Zero, 0, "", fmt.Errorf("%s: %w", original, err)
 	}
 
-	return newDecimal(dec), des, str[i+1:], err
+	return dec, des, str[i+1:], err
 }
 
 // scanDigits finds the index of the first non-digit character after some digits.

@@ -4,13 +4,17 @@
 
 package period
 
+import "errors"
+
 // Subtract subtracts one period from another.
-func (period Period64) Subtract(other Period64) Period64 {
+// Arithmetic overflow will result in an error.
+func (period Period64) Subtract(other Period64) (Period64, error) {
 	return period.Add(other.Negate())
 }
 
 // Add adds two periods together. Use this method along with Negate in order to subtract periods.
-func (period Period64) Add(other Period64) Period64 {
+// Arithmetic overflow will result in an error.
+func (period Period64) Add(other Period64) (Period64, error) {
 	var left, right Period64
 
 	if period.neg {
@@ -25,15 +29,16 @@ func (period Period64) Add(other Period64) Period64 {
 		right = other
 	}
 
-	return Period64{
-		years:   left.years.Add(right.years),
-		months:  left.months.Add(right.months),
-		weeks:   left.weeks.Add(right.weeks),
-		days:    left.days.Add(right.days),
-		hours:   left.hours.Add(right.hours),
-		minutes: left.minutes.Add(right.minutes),
-		seconds: left.seconds.Add(right.seconds),
-	}.Normalise(true)
+	years, e1 := left.years.Add(right.years)
+	months, e2 := left.months.Add(right.months)
+	weeks, e3 := left.weeks.Add(right.weeks)
+	days, e4 := left.days.Add(right.days)
+	hours, e5 := left.hours.Add(right.hours)
+	minutes, e6 := left.minutes.Add(right.minutes)
+	seconds, e7 := left.seconds.Add(right.seconds)
+
+	result := Period64{years: years, months: months, weeks: weeks, days: days, hours: hours, minutes: minutes, seconds: seconds}.Normalise(true).NormaliseSign()
+	return result, errors.Join(e1, e2, e3, e4, e5, e6, e7)
 }
 
 //-------------------------------------------------------------------------------------------------

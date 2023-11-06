@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package period provides functionality for periods of time using ISO-8601 conventions.
-// This deals with years, months, weeks/days, hours, minutes and seconds.
+// This deals with years, months, weeks, days, hours, minutes and seconds.
 //
 // Because of the vagaries of calendar systems, the meaning of year lengths, month lengths
 // and even day lengths depends on context. So a period is not necessarily a fixed duration
