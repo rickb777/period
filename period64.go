@@ -14,10 +14,14 @@ import (
 
 // Period64 holds a period of time as a set of integers, one for each field in the ISO-8601
 // period, and additional information to track any fraction.
-// Conventionally, all the fields normally have the same sign. However, this is not restricted,
+//
+// By conventional, all the fields have the same sign. However, this is not restricted,
 // so each field after the first non-zero field can be independently positive or negative.
-// The precision is large: all fields use int64 internally for calculations, although the method inputs
-// and outputs are int for convenience. Fractions are supported on the least significant non-zero field.
+// Sometimes this makes sense, e.g. "P1DT-1S" is one second less than one day.
+//
+// The precision is large: all fields are scaled decimals using int64 internally for calculations, although
+// the method inputs and outputs are int for convenience. Fractions are supported on the least significant
+// non-zero field only.
 //
 // Instances are immutable.
 type Period64 struct {
@@ -27,7 +31,7 @@ type Period64 struct {
 	neg bool
 }
 
-// Zero is the zero length period.
+// Zero is the zero period.
 var Zero = Period64{}
 
 //-------------------------------------------------------------------------------------------------
@@ -35,10 +39,6 @@ var Zero = Period64{}
 // NewYMWD creates a simple period without any fractional parts. The fields are initialised verbatim
 // without any normalisation; e.g. 12 months will not become 1 year. Use the Normalise method if you
 // need to.
-//
-// All the parameters must have the same sign (otherwise a panic occurs).
-// Because this implementation uses int16 internally, the paramters must
-// be within the range ± 2^16 / 10.
 func NewYMWD(years, months, weeks, days int) Period64 {
 	return New(years, months, weeks, days, 0, 0, 0)
 }
@@ -46,10 +46,6 @@ func NewYMWD(years, months, weeks, days int) Period64 {
 // NewHMS creates a simple period without any fractional parts. The fields are initialised verbatim
 // without any normalisation; e.g. 120 seconds will not become 2 minutes. Use the Normalise method
 // if you need to.
-//
-// All the parameters must have the same sign (otherwise a panic occurs).
-// Because this implementation uses int16 internally, the paramters must
-// be within the range ± 2^16 / 10.
 func NewHMS(hours, minutes, seconds int) Period64 {
 	return New(0, 0, 0, 0, hours, minutes, seconds)
 }
@@ -72,9 +68,9 @@ func New(years, months, weeks, days, hours, minutes, seconds int) Period64 {
 // is applied, e.g. 120 seconds will not become 2 minutes. Use the Normalise() method
 // if you need to.
 //
-// Periods only allow the least significant non-zero field to contain a fraction. If any of the more
-// significant fields is supplied with a fraction, an error will be returned. This can be safely ignored
-// for non-standard behaviour.
+// Periods only allow the least-significant non-zero field to contain a fraction. If any of the
+// more-significant fields is supplied with a fraction, an error will be returned. This can be safely
+// ignored for non-standard behaviour.
 func NewDecimal(years, months, weeks, days, hours, minutes, seconds decimal.Decimal) (period Period64, err error) {
 	ymwd := make([]string, 0, 4)
 	hms := make([]string, 0, 4)
@@ -247,7 +243,7 @@ func (period Period64) YearsInt() int {
 
 // Years gets the number of years in the period, including any fraction present.
 func (period Period64) Years() decimal.Decimal {
-	return period.fieldValue(period.years)
+	return period.applySign(period.years)
 }
 
 // MonthsInt gets the whole number of months in the period.
@@ -258,7 +254,7 @@ func (period Period64) MonthsInt() int {
 
 // Months gets the number of months in the period, including any fraction present.
 func (period Period64) Months() decimal.Decimal {
-	return period.fieldValue(period.months)
+	return period.applySign(period.months)
 }
 
 // WeeksInt gets the whole number of weeks in the period.
@@ -269,7 +265,7 @@ func (period Period64) WeeksInt() int {
 
 // Weeks gets the number of weeks in the period, including any fraction present.
 func (period Period64) Weeks() decimal.Decimal {
-	return period.fieldValue(period.weeks)
+	return period.applySign(period.weeks)
 }
 
 // DaysInt gets the whole number of days in the period.
@@ -280,7 +276,7 @@ func (period Period64) DaysInt() int {
 
 // Days gets the number of days in the period, including any fraction present.
 func (period Period64) Days() decimal.Decimal {
-	return period.fieldValue(period.days)
+	return period.applySign(period.days)
 }
 
 // HoursInt gets the whole number of hours in the period.
@@ -291,7 +287,7 @@ func (period Period64) HoursInt() int {
 
 // Hours gets the number of hours in the period, including any fraction present.
 func (period Period64) Hours() decimal.Decimal {
-	return period.fieldValue(period.hours)
+	return period.applySign(period.hours)
 }
 
 // MinutesInt gets the whole number of minutes in the period.
@@ -302,7 +298,7 @@ func (period Period64) MinutesInt() int {
 
 // Minutes gets the number of minutes in the period, including any fraction present.
 func (period Period64) Minutes() decimal.Decimal {
-	return period.fieldValue(period.minutes)
+	return period.applySign(period.minutes)
 }
 
 // SecondsInt gets the whole number of seconds in the period.
@@ -313,11 +309,11 @@ func (period Period64) SecondsInt() int {
 
 // Seconds gets the number of seconds in the period, including any fraction present.
 func (period Period64) Seconds() decimal.Decimal {
-	return period.fieldValue(period.seconds)
+	return period.applySign(period.seconds)
 }
 
 // Seconds gets the number of seconds in the period, including any fraction present.
-func (period Period64) fieldValue(field decimal.Decimal) decimal.Decimal {
+func (period Period64) applySign(field decimal.Decimal) decimal.Decimal {
 	if period.neg {
 		return field.Neg()
 	}
@@ -418,8 +414,10 @@ func moveToRight(larger, smaller decimal.Decimal, n int64) (decimal.Decimal, dec
 		return lg1, sm1 // it's hard to beat this
 	}
 
-	extraDigits := int64(larger.Sign()) * int64(larger.Coef()) * n
-	extra, err := decimal.New(extraDigits, larger.Scale())
+	//extraDigits := int64(larger.Sign()) * int64(larger.Coef()) * n
+	//extra, err := decimal.New(extraDigits, larger.Scale())
+	nd := decimal.MustNew(n, 0)
+	extra, err := larger.Mul(nd)
 	if err != nil {
 		return larger, smaller
 	}

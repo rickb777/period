@@ -173,7 +173,7 @@ func parseNextField(str, original string, isHMS bool) (decimal.Decimal, designat
 
 	dec, err := decimal.Parse(number)
 	if err != nil {
-		panic(fmt.Errorf("unreachable: %s: %w", original, err))
+		return decimal.Zero, 0, "", fmt.Errorf("%s: number invalid or out of range", original)
 	}
 
 	des, err := asDesignator(str[i], isHMS)

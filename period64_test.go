@@ -9,6 +9,7 @@ import (
 	"github.com/govalues/decimal"
 	. "github.com/onsi/gomega"
 	"math"
+	"strings"
 	"testing"
 	"time"
 )
@@ -40,6 +41,8 @@ func add(a, b decimal.Decimal) decimal.Decimal {
 func TestNewHMS(t *testing.T) {
 	g := NewGomegaWithT(t)
 
+	const largeInt = math.MaxInt32
+
 	cases := []struct {
 		period                  Period64
 		hours, minutes, seconds int
@@ -51,22 +54,29 @@ func TestNewHMS(t *testing.T) {
 		{period: Period64{seconds: decI(1)}, seconds: 1},
 		{period: Period64{minutes: decI(1)}, minutes: 1},
 		{period: Period64{hours: decI(1)}, hours: 1},
+
 		{period: Period64{hours: decI(3), minutes: decI(4), seconds: decI(5)}, hours: 3, minutes: 4, seconds: 5},
-		{period: Period64{hours: decI(3276), minutes: decI(3276), seconds: decI(3276)}, hours: 3276, minutes: 3276, seconds: 3276},
+		{period: Period64{hours: decI(largeInt), minutes: decI(largeInt), seconds: decI(largeInt)}, hours: largeInt, minutes: largeInt, seconds: largeInt},
 	}
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %dh %dm %ds", i, c.hours, c.minutes, c.seconds), func(t *testing.T) {
 			pp := NewHMS(c.hours, c.minutes, c.seconds)
 			g.Expect(pp).To(Equal(c.period), info(i, c.period))
+			g.Expect(pp.Hours()).To(Equal(decimal.MustNew(int64(c.hours), 0)), info(i, c.period))
 			g.Expect(pp.HoursInt()).To(Equal(c.hours), info(i, c.period))
+			g.Expect(pp.Minutes()).To(Equal(decimal.MustNew(int64(c.minutes), 0)), info(i, c.period))
 			g.Expect(pp.MinutesInt()).To(Equal(c.minutes), info(i, c.period))
+			g.Expect(pp.Seconds()).To(Equal(decimal.MustNew(int64(c.seconds), 0)), info(i, c.period))
 			g.Expect(pp.SecondsInt()).To(Equal(c.seconds), info(i, c.period))
 
 			pn := NewHMS(-c.hours, -c.minutes, -c.seconds)
 			en := c.period.Negate()
 			g.Expect(pn).To(Equal(en), info(i, en))
+			g.Expect(pn.Hours()).To(Equal(decimal.MustNew(int64(-c.hours), 0)), info(i, c.period))
 			g.Expect(pn.HoursInt()).To(Equal(-c.hours), info(i, en))
+			g.Expect(pn.Minutes()).To(Equal(decimal.MustNew(int64(-c.minutes), 0)), info(i, c.period))
 			g.Expect(pn.MinutesInt()).To(Equal(-c.minutes), info(i, en))
+			g.Expect(pn.Seconds()).To(Equal(decimal.MustNew(int64(-c.seconds), 0)), info(i, c.period))
 			g.Expect(pn.SecondsInt()).To(Equal(-c.seconds), info(i, en))
 		})
 	}
@@ -74,44 +84,118 @@ func TestNewHMS(t *testing.T) {
 
 //-------------------------------------------------------------------------------------------------
 
-func TestNewYMD(t *testing.T) {
+func TestNewYMWD(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	const largeInt = math.MaxInt32
 
 	cases := []struct {
 		period                     Period64
-		years, months, weeks, days int64
+		years, months, weeks, days int
 	}{
 		// note: the negative cases are also covered (see below)
 
 		{}, // zero case
 
 		{period: Period64{days: decI(1)}, days: 1},
+		{period: Period64{weeks: decI(1)}, weeks: 1},
 		{period: Period64{months: decI(1)}, months: 1},
 		{period: Period64{years: decI(1)}, years: 1},
-		{period: Period64{years: decI(100), months: decI(222), days: decI(700)}, years: 100, months: 222, days: 700},
-		{period: Period64{years: decI(largeInt), months: decI(largeInt), days: decI(largeInt)}, years: largeInt, months: largeInt, days: largeInt},
+
+		{period: Period64{years: decI(100), months: decI(222), weeks: decI(404), days: decI(700)}, years: 100, months: 222, weeks: 404, days: 700},
+		{period: Period64{years: decI(largeInt), months: decI(largeInt), weeks: decI(largeInt), days: decI(largeInt)}, years: largeInt, months: largeInt, weeks: largeInt, days: largeInt},
 	}
 	for i, c := range cases {
-		pp := NewYMWD(int(c.years), int(c.months), int(c.weeks), int(c.days))
+		pp := NewYMWD(c.years, c.months, c.weeks, c.days)
 		g.Expect(pp).To(Equal(c.period), info(i, c.period))
-		g.Expect(pp.YearsInt()).To(Equal(int(c.years)), info(i, c.period))
 		g.Expect(pp.Years()).To(Equal(decimal.MustNew(int64(c.years), 0)), info(i, c.period))
-		g.Expect(pp.MonthsInt()).To(Equal(int(c.months)), info(i, c.period))
+		g.Expect(pp.YearsInt()).To(Equal(c.years), info(i, c.period))
 		g.Expect(pp.Months()).To(Equal(decimal.MustNew(int64(c.months), 0)), info(i, c.period))
-		g.Expect(pp.DaysInt()).To(Equal(int(c.days)), info(i, c.period))
+		g.Expect(pp.MonthsInt()).To(Equal(c.months), info(i, c.period))
+		g.Expect(pp.Weeks()).To(Equal(decimal.MustNew(int64(c.weeks), 0)), info(i, c.period))
+		g.Expect(pp.WeeksInt()).To(Equal(c.weeks), info(i, c.period))
 		g.Expect(pp.Days()).To(Equal(decimal.MustNew(int64(c.days), 0)), info(i, c.period))
+		g.Expect(pp.DaysInt()).To(Equal(c.days), info(i, c.period))
 
-		pn := NewYMWD(int(-c.years), int(-c.months), int(-c.weeks), int(-c.days))
+		pn := NewYMWD(-c.years, -c.months, -c.weeks, -c.days)
 		en := c.period.Negate()
 		g.Expect(pn).To(Equal(en), info(i, en))
-		g.Expect(pn.YearsInt()).To(Equal(int(-c.years)), info(i, en))
 		g.Expect(pn.Years()).To(Equal(decimal.MustNew(int64(-c.years), 0)), info(i, en))
-		g.Expect(pn.MonthsInt()).To(Equal(int(-c.months)), info(i, en))
+		g.Expect(pn.YearsInt()).To(Equal(-c.years), info(i, en))
 		g.Expect(pn.Months()).To(Equal(decimal.MustNew(int64(-c.months), 0)), info(i, en))
-		g.Expect(pn.DaysInt()).To(Equal(int(-c.days)), info(i, en))
+		g.Expect(pn.MonthsInt()).To(Equal(-c.months), info(i, en))
+		g.Expect(pn.Weeks()).To(Equal(decimal.MustNew(int64(-c.weeks), 0)), info(i, en))
+		g.Expect(pn.WeeksInt()).To(Equal(-c.weeks), info(i, en))
 		g.Expect(pn.Days()).To(Equal(decimal.MustNew(int64(-c.days), 0)), info(i, en))
+		g.Expect(pn.DaysInt()).To(Equal(-c.days), info(i, en))
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
+func TestNewDecimal(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	var (
+		largeInt = decI(math.MaxInt32)
+		one      = decI(1)
+	)
+
+	cases := []struct {
+		period                     Period64
+		years, months, weeks, days decimal.Decimal
+		hours, minutes, seconds    decimal.Decimal
+	}{
+		{}, // zero case
+
+		{period: Period64{seconds: one}, seconds: one},
+		{period: Period64{minutes: one}, minutes: one},
+		{period: Period64{hours: one}, hours: one},
+		{period: Period64{days: one}, days: one},
+		{period: Period64{weeks: one}, weeks: one},
+		{period: Period64{months: one}, months: one},
+		{period: Period64{years: one}, years: one},
+
+		{period: Period64{years: largeInt, months: largeInt, weeks: largeInt, days: largeInt, hours: largeInt, minutes: largeInt, seconds: largeInt},
+			years: largeInt, months: largeInt, weeks: largeInt, days: largeInt, hours: largeInt, minutes: largeInt, seconds: largeInt},
+	}
+	for i, c := range cases {
+		pp, err := NewDecimal(c.years, c.months, c.weeks, c.days, c.hours, c.minutes, c.seconds)
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(pp).To(Equal(c.period), info(i, c.period))
+		g.Expect(pp.Years()).To(Equal(c.years), info(i, c.period))
+		g.Expect(pp.Months()).To(Equal(c.months), info(i, c.period))
+		g.Expect(pp.Weeks()).To(Equal(c.weeks), info(i, c.period))
+		g.Expect(pp.Days()).To(Equal(c.days), info(i, c.period))
+		g.Expect(pp.Hours()).To(Equal(c.hours), info(i, c.period))
+		g.Expect(pp.Minutes()).To(Equal(c.minutes), info(i, c.period))
+		g.Expect(pp.Seconds()).To(Equal(c.seconds), info(i, c.period))
+	}
+}
+
+func TestNewDecimal_error(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	cases := []struct {
+		period                     Period64
+		years, months, weeks, days decimal.Decimal
+		hours, minutes, seconds    decimal.Decimal
+	}{
+		{period: Period64{years: dec(1, 1), months: dec(2, 1), weeks: dec(3, 1), days: dec(4, 1), hours: dec(5, 1), minutes: dec(6, 1), seconds: dec(7, 1)},
+			years: dec(1, 1), months: dec(2, 1), weeks: dec(3, 1), days: dec(4, 1), hours: dec(5, 1), minutes: dec(6, 1), seconds: dec(7, 1)},
+	}
+	for i, c := range cases {
+		pp, err := NewDecimal(c.years, c.months, c.weeks, c.days, c.hours, c.minutes, c.seconds)
+		g.Expect(err).To(HaveOccurred())
+		g.Expect(err.Error()).To(ContainSubstring("0.1Y0.2M0.3W0.4DT0.5H0.6M0.7S"))
+		g.Expect(pp).To(Equal(c.period), info(i, c.period))
+		g.Expect(pp.Years()).To(Equal(c.years), info(i, c.period))
+		g.Expect(pp.Months()).To(Equal(c.months), info(i, c.period))
+		g.Expect(pp.Weeks()).To(Equal(c.weeks), info(i, c.period))
+		g.Expect(pp.Days()).To(Equal(c.days), info(i, c.period))
+		g.Expect(pp.Hours()).To(Equal(c.hours), info(i, c.period))
+		g.Expect(pp.Minutes()).To(Equal(c.minutes), info(i, c.period))
+		g.Expect(pp.Seconds()).To(Equal(c.seconds), info(i, c.period))
 	}
 }
 
@@ -150,14 +234,6 @@ func testNewOf1(t *testing.T, i int, source time.Duration, expected Period64) {
 }
 
 //-------------------------------------------------------------------------------------------------
-
-func rescale(d decimal.Decimal, s int) decimal.Decimal {
-	r, err := d.Rescale(s)
-	if err != nil {
-		panic(err)
-	}
-	return r.Trim(0)
-}
 
 func Test_String(t *testing.T) {
 	g := NewGomegaWithT(t)
@@ -331,6 +407,8 @@ func Test_Normalise(t *testing.T) {
 func Test_Simplify(t *testing.T) {
 	g := NewGomegaWithT(t)
 
+	var extremeMinSec = Period(fmt.Sprintf("PT%dM0.%s1S", math.MaxInt64, strings.Repeat("0", 18)))
+
 	cases := []struct {
 		input     Period
 		precise   Period
@@ -385,6 +463,9 @@ func Test_Simplify(t *testing.T) {
 
 		// small overflow disregarded
 		{input: "PT60.0005S", precise: "PT60.0005S", imprecise: "PT60.0005S"},
+
+		// because of addition overflow, this input is unaltered
+		{input: extremeMinSec, precise: extremeMinSec, imprecise: extremeMinSec},
 	}
 
 	for i, c := range cases {
