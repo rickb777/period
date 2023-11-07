@@ -235,6 +235,77 @@ func testNewOf1(t *testing.T, i int, source time.Duration, expected Period64) {
 
 //-------------------------------------------------------------------------------------------------
 
+func TestBetween(t *testing.T) {
+	g := NewGomegaWithT(t)
+	now := time.Now()
+
+	cases := []struct {
+		a, b     time.Time
+		expected Period64
+	}{
+		// note: the negative cases are also covered (see below)
+
+		{now, now, Period64{}},
+
+		// simple positive date calculations
+		{utc(2015, 1, 1, 0, 0, 0, 0), utc(2015, 1, 1, 0, 0, 0, 1), Period64{seconds: dec(1, 3)}},
+		{utc(2015, 1, 1, 0, 0, 0, 0), utc(2015, 2, 2, 1, 1, 1, 1), Period64{weeks: decI(4), days: decI(4), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 2, 1, 0, 0, 0, 0), utc(2015, 3, 2, 1, 1, 1, 1), Period64{weeks: decI(4), days: decI(1), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 3, 1, 0, 0, 0, 0), utc(2015, 4, 2, 1, 1, 1, 1), Period64{weeks: decI(4), days: decI(4), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 4, 1, 0, 0, 0, 0), utc(2015, 5, 2, 1, 1, 1, 1), Period64{weeks: decI(4), days: decI(3), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 5, 1, 0, 0, 0, 0), utc(2015, 6, 2, 1, 1, 1, 1), Period64{weeks: decI(4), days: decI(4), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 6, 1, 0, 0, 0, 0), utc(2015, 7, 2, 1, 1, 1, 1), Period64{weeks: decI(4), days: decI(3), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 1, 1, 0, 0, 0, 0), utc(2015, 7, 2, 1, 1, 1, 1), Period64{weeks: decI(26), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+
+		// less than one month
+		{utc(2016, 1, 2, 0, 0, 0, 0), utc(2016, 2, 1, 0, 0, 0, 0), Period64{weeks: decI(4), days: decI(2)}},
+		{utc(2015, 2, 2, 0, 0, 0, 0), utc(2015, 3, 1, 0, 0, 0, 0), Period64{weeks: decI(3), days: decI(6)}}, // non-leap
+		{utc(2016, 2, 2, 0, 0, 0, 0), utc(2016, 3, 1, 0, 0, 0, 0), Period64{weeks: decI(4)}},                // leap year
+		{utc(2016, 3, 2, 0, 0, 0, 0), utc(2016, 4, 1, 0, 0, 0, 0), Period64{weeks: decI(4), days: decI(2)}},
+		{utc(2016, 4, 2, 0, 0, 0, 0), utc(2016, 5, 1, 0, 0, 0, 0), Period64{weeks: decI(4), days: decI(1)}},
+		{utc(2016, 5, 2, 0, 0, 0, 0), utc(2016, 6, 1, 0, 0, 0, 0), Period64{weeks: decI(4), days: decI(2)}},
+		{utc(2016, 6, 2, 0, 0, 0, 0), utc(2016, 7, 1, 0, 0, 0, 0), Period64{weeks: decI(4), days: decI(1)}},
+
+		// BST drops an hour at the daylight-saving transition
+		{utc(2015, 1, 1, 0, 0, 0, 0), bst(2015, 7, 2, 1, 1, 1, 1), Period64{weeks: decI(26), minutes: decI(1), seconds: dec(1001, 3)}},
+
+		// daytime only
+		{utc(2015, 1, 1, 2, 3, 4, 0), utc(2015, 1, 1, 2, 3, 4, 500), Period64{seconds: dec(5, 1)}},
+		{utc(2015, 1, 1, 2, 3, 4, 0), utc(2015, 1, 1, 4, 4, 7, 500), Period64{hours: decI(2), minutes: decI(1), seconds: dec(35, 1)}},
+		{utc(2015, 1, 1, 2, 3, 4, 500), utc(2015, 1, 1, 4, 4, 7, 0), Period64{hours: decI(2), minutes: decI(1), seconds: dec(25, 1)}},
+
+		// different dates and times
+		{utc(2015, 2, 1, 1, 0, 0, 0), utc(2015, 5, 30, 5, 6, 7, 0), Period64{weeks: decI(16), days: decI(6), hours: decI(4), minutes: decI(6), seconds: decI(7)}},
+		{utc(2015, 2, 1, 1, 0, 0, 0), bst(2015, 5, 30, 5, 6, 7, 0), Period64{weeks: decI(16), days: decI(6), hours: decI(3), minutes: decI(6), seconds: decI(7)}},
+
+		// earlier month in later year
+		{utc(2015, 12, 22, 0, 0, 0, 0), utc(2016, 1, 10, 5, 6, 7, 0), Period64{weeks: decI(2), days: decI(5), hours: decI(5), minutes: decI(6), seconds: decI(7)}},
+		{utc(2015, 2, 11, 5, 6, 7, 500), utc(2016, 1, 10, 0, 0, 0, 0), Period64{weeks: decI(47), days: decI(3), hours: decI(18), minutes: decI(53), seconds: dec(525, 1)}},
+
+		// larger ranges
+		{utc(2009, 1, 1, 0, 0, 1, 0), utc(2016, 12, 31, 0, 0, 2, 0), Period64{weeks: decI(417), days: decI(2), seconds: decI(1)}},
+		{utc(2009, 1, 1, 0, 0, 1, 0), utc(2017, 12, 21, 0, 0, 2, 0), Period64{weeks: decI(468), days: decI(0), seconds: decI(1)}},
+		{utc(2009, 1, 1, 0, 0, 1, 0), utc(2017, 12, 22, 0, 0, 2, 0), Period64{weeks: decI(468), days: decI(1), seconds: decI(1)}},
+		{utc(2009, 1, 1, 10, 10, 10, 00), utc(2017, 12, 23, 5, 5, 5, 5), Period64{weeks: decI(468), days: decI(1), hours: decI(18), minutes: decI(54), seconds: dec(55005, 3)}},
+		{utc(1900, 1, 1, 0, 0, 1, 0), utc(2009, 12, 31, 0, 0, 2, 0), Period64{weeks: decI(5739), days: decI(3), seconds: decI(1)}},
+
+		{japan(2021, 3, 1, 0, 0, 0, 0), japan(2021, 9, 7, 0, 0, 0, 0), Period64{weeks: decI(27), days: decI(1)}},
+		{japan(2021, 3, 1, 0, 0, 0, 0), utc(2021, 9, 7, 0, 0, 0, 0), Period64{weeks: decI(27), days: decI(1), hours: decI(9)}},
+	}
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("%d %s", i, c.expected), func(t *testing.T) {
+			pp := Between(c.a, c.b).Normalise(false)
+			g.Expect(pp).To(Equal(c.expected), info(i, c.expected))
+
+			pn := Between(c.b, c.a).Normalise(false)
+			en := c.expected.Negate()
+			g.Expect(pn).To(Equal(en), info(i, en))
+		})
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
 func Test_String(t *testing.T) {
 	g := NewGomegaWithT(t)
 
@@ -693,10 +764,14 @@ func Test_Period64_Sign_Abs_etc(t *testing.T) {
 	g.Expect(neg.IsNegative()).To(BeTrue())
 }
 
-var london *time.Location // UTC + 1 hour during summer
+var (
+	london *time.Location // UTC + 1 hour during summer
+	tokyo  *time.Location // UTC + 1 hour during summer
+)
 
 func init() {
 	london, _ = time.LoadLocation("Europe/London")
+	tokyo, _ = time.LoadLocation("Asia/Tokyo")
 }
 
 func info(i int, m ...interface{}) string {
@@ -705,4 +780,16 @@ func info(i int, m ...interface{}) string {
 		return fmt.Sprintf("%d "+s, m...)
 	}
 	return fmt.Sprintf("%d %v", i, m[0])
+}
+
+func utc(year int, month time.Month, day, hour, min, sec, msec int) time.Time {
+	return time.Date(year, month, day, hour, min, sec, msec*int(time.Millisecond), time.UTC)
+}
+
+func bst(year int, month time.Month, day, hour, min, sec, msec int) time.Time {
+	return time.Date(year, month, day, hour, min, sec, msec*int(time.Millisecond), london)
+}
+
+func japan(year int, month time.Month, day, hour, min, sec, msec int) time.Time {
+	return time.Date(year, month, day, hour, min, sec, msec*int(time.Millisecond), tokyo)
 }

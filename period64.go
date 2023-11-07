@@ -115,11 +115,31 @@ func NewDecimal(years, months, weeks, days, hours, minutes, seconds decimal.Deci
 	}.NormaliseSign(), err
 }
 
-// NewOf converts a time duration to a Period64. The result just a number of seconds, possibly including
-// a fraction. It is not normalised; see Normalise().
+// NewOf converts a time duration to a Period64.
+// The result just a number of seconds, possibly including a fraction. It is not normalised; see Normalise().
 func NewOf(duration time.Duration) Period64 {
 	seconds := decimal.MustNew(int64(duration), 9).Trim(0)
 	return Period64{seconds: seconds}.NormaliseSign()
+}
+
+//-------------------------------------------------------------------------------------------------
+
+// Between converts the span between two times to a period. Based on the Gregorian conversion
+// algorithms of `time.Time`, the resultant period is precise.
+//
+// If t2 is before t1, the result is a negative period.
+//
+// The result just a number of seconds, possibly including a fraction. It is not normalised; see Normalise().
+//
+// Remember that the resultant period does not retain any knowledge of the calendar, so any subsequent
+// computations applied to the period can only be precise if they concern either the date (year, month,
+// day) part, or the clock (hour, minute, second) part, but not both.
+func Between(t1, t2 time.Time) Period64 {
+	if t2.Before(t1) {
+		return NewOf(t2.Sub(t1))
+	}
+
+	return NewOf(t1.Sub(t2)).Negate()
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -568,6 +588,10 @@ const (
 
 	daysPerYearE6  = 365242500          // 365.2425 days by the Gregorian rule
 	daysPerMonthE6 = daysPerYearE6 / 12 // 30.436875 days per month
+
+	// gregorianYearExtraSeconds is the extra seconds needed to convert years to days, there
+	// being 365.2425 days per year by the Gregorian rule.
+	gregorianYearExtraSeconds = 20952 // 0.2425 * 86,400 seconds
 
 	oneE3 int64 = 1000
 	oneE9 int64 = 1_000_000_000 // used for fractions because 0 < fraction <= 999_999_999
