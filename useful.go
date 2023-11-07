@@ -36,22 +36,11 @@ func (u *uw) Write(p []byte) (n int, err error) {
 }
 
 func (u *uw) WriteString(s string) (n int, err error) {
-	if u.err != nil {
-		return 0, u.err
-	}
-	n, err = u.w.Write([]byte(s))
-	u.sum += n
-	u.err = err
-	return n, err
+	return u.Write([]byte(s))
 }
 
 func (u *uw) WriteByte(b byte) error {
-	if u.err != nil {
-		return u.err
-	}
-	n, err := u.w.Write([]byte{b})
-	u.sum += n
-	u.err = err
+	_, err := u.Write([]byte{b})
 	return err
 }
 

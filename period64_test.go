@@ -296,9 +296,11 @@ func Test_String(t *testing.T) {
 
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.expected), func(t *testing.T) {
+			// check the normal case
 			sp1 := c.p64.Period()
 			g.Expect(sp1).To(Equal(c.expected))
 
+			// check the negative case
 			if !c.p64.IsZero() {
 				sn := c.p64.Negate().Period()
 				ne := "-" + c.expected
@@ -307,8 +309,25 @@ func Test_String(t *testing.T) {
 				}
 				g.Expect(sn).To(Equal(ne))
 			}
+
+			// also check WriteTo method is consistent and returns the correct count
+			buf := simpleBuffer{}
+			n, err := c.p64.WriteTo(&buf)
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(n).To(Equal(int64(len(string(buf.bs)))))
+			g.Expect(string(buf.bs)).To(Equal(string(sp1)))
 		})
 	}
+}
+
+// simpleBuffer intentionally only has Write method.
+type simpleBuffer struct {
+	bs []byte
+}
+
+func (sb *simpleBuffer) Write(bs []byte) (int, error) {
+	sb.bs = append(sb.bs, bs...)
+	return len(bs), nil
 }
 
 //-------------------------------------------------------------------------------------------------

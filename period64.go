@@ -135,47 +135,46 @@ func (period Period64) Period() Period {
 // If there is a decimal fraction, it will be rendered using a decimal point separator.
 // (not a comma).
 func (period Period64) String() string {
-	if period == Zero {
-		return "P0D"
-	}
-
 	buf := &strings.Builder{}
-	period.WriteTo(buf)
+	_, _ = period.WriteTo(buf)
 	return buf.String()
 }
 
 // WriteTo converts the period to ISO-8601 form.
 func (period Period64) WriteTo(w io.Writer) (int64, error) {
-	buf := adapt(w)
+	aw := adapt(w)
+
+	if period == Zero {
+		_, _ = aw.WriteString(string(CanonicalZero))
+		return uwSum(aw)
+	}
 
 	if period.neg {
-		buf.WriteByte('-')
+		_ = aw.WriteByte('-')
 	}
 
-	buf.WriteByte('P')
+	_ = aw.WriteByte('P')
 
-	writeField(buf, period.years, Year)
-	writeField(buf, period.months, Month)
-	writeField(buf, period.weeks, Week)
-	writeField(buf, period.days, Day)
+	writeField(aw, period.years, Year)
+	writeField(aw, period.months, Month)
+	writeField(aw, period.weeks, Week)
+	writeField(aw, period.days, Day)
 
-	if period.hours.Coef() == 0 && period.minutes.Coef() == 0 && period.seconds.Coef() == 0 {
-		return uwSum(buf)
+	if period.hours.Coef() != 0 || period.minutes.Coef() != 0 || period.seconds.Coef() != 0 {
+		_ = aw.WriteByte('T')
+
+		writeField(aw, period.hours, Hour)
+		writeField(aw, period.minutes, Minute)
+		writeField(aw, period.seconds, Second)
 	}
 
-	buf.WriteByte('T')
-
-	writeField(buf, period.hours, Hour)
-	writeField(buf, period.minutes, Minute)
-	writeField(buf, period.seconds, Second)
-
-	return uwSum(buf)
+	return uwSum(aw)
 }
 
 func writeField(w usefulWriter, field decimal.Decimal, fieldDesignator designator) {
 	if field.Coef() != 0 {
-		w.WriteString(field.String())
-		w.WriteByte(fieldDesignator.Byte())
+		_, _ = w.WriteString(field.String())
+		_ = w.WriteByte(fieldDesignator.Byte())
 	}
 }
 
