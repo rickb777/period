@@ -7,19 +7,24 @@
 //
 // Because of the vagaries of calendar systems, the meaning of year lengths, month lengths
 // and even day lengths depends on context. So a period is not necessarily a fixed duration
-// of time in terms of seconds.
+// of time in terms of seconds. The type time.Duration is measured in terms of (nano-)
+// seconds. Periods can be converted to/from durations; depending on the length of period
+// this may be calculated exactly or approximately.
 //
-// See https://en.wikipedia.org/wiki/ISO_8601#Durations
+// The period defined in this API is specified by ISO-8601, but that uses the term 'duration'
+// instead; see https://en.wikipedia.org/wiki/ISO_8601#Durations. In Go, time.Duration and
+// this period.Period follow terminology similar to e.g. Joda Time in that a 'duration' is
+// a definite number of seconds (or fractions of a second).
 //
-// Example representations:
+// Example period.Period representations:
 //
 // * "P2Y" is two years;
 //
 // * "P6M" is six months;
 //
-// * "P4D" is four days;
-//
 // * "P1W" is one week (seven days);
+//
+// * "P4D" is four days;
 //
 // * "PT3H" is three hours.
 //
@@ -31,11 +36,11 @@
 //
 // These can be combined, for example:
 //
-// * "P3Y6M4W1D" is three years, 6 months, 4 weeks and one day.
+// * "P3Y11M4W1D" is 3 years, 11 months, 4 weeks and 1 day, which is nearly 4 years.
 //
 // * "P2DT12H" is 2 days and 12 hours.
 //
-// * "P1M-1D" is one month minus one day. Mixed signs may not be widely supported elsewhere.
+// * "P1M-1D" is 1 month minus 1 day. Mixed signs are permitted but may not be widely supported elsewhere.
 //
 // Also, decimal fractions are supported. To comply with the standard,
 // only the last non-zero component is allowed to have a fraction.

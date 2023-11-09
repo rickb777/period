@@ -133,9 +133,9 @@ func (period Period64) Add(other Period64) (Period64, error) {
 //func (period *Period64) moveFractionToRight() *Period64 {
 //	// remember that the fields are all fixed-point 1E1
 //
-//	if period.lastField == Year && (period.fraction != 0) {
+//	if period.lastField == year && (period.fraction != 0) {
 //		f := int64(period.fraction) * 12
-//		period.lastField = Month
+//		period.lastField = month
 //		period.months = int32(f / 1_000_000_000)
 //		period.fraction = int32(f % 1_000_000_000)
 //	}
@@ -146,7 +146,7 @@ func (period Period64) Add(other Period64) (Period64, error) {
 //	//	period.months = (period.months / 10) * 10
 //	//}
 //
-//	if period.lastField == Week && (period.fraction != 0) {
+//	if period.lastField == week && (period.fraction != 0) {
 //		f := int64(period.fraction) * 7
 //		period.lastField = Day
 //		period.days = int32(f / 1_000_000_000)
@@ -159,16 +159,16 @@ func (period Period64) Add(other Period64) (Period64, error) {
 //	//	period.days = (period.days / 10) * 10
 //	//}
 //
-//	if period.lastField == Hour && (period.fraction != 0) {
+//	if period.lastField == hour && (period.fraction != 0) {
 //		f := int64(period.fraction) * 60
-//		period.lastField = Minute
+//		period.lastField = minute
 //		period.minutes = int32(f / 1_000_000_000)
 //		period.fraction = int32(f % 1_000_000_000)
 //	}
 //
-//	if period.lastField == Minute && (period.fraction != 0) {
+//	if period.lastField == minute && (period.fraction != 0) {
 //		f := int64(period.fraction) * 60
-//		period.lastField = Second
+//		period.lastField = second
 //		period.minutes = int32(f / 1_000_000_000)
 //		period.fraction = int32(f % 1_000_000_000)
 //	}

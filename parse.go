@@ -74,7 +74,7 @@ func (period *Period64) Parse(isoPeriod string) error {
 	var err error
 	nComponents := 0
 
-	years, months, weeks, days = Armed, Armed, Armed, Armed
+	years, months, weeks, days = armed, armed, armed, armed
 
 	isHMS := false
 	for len(remaining) > 0 {
@@ -84,8 +84,8 @@ func (period *Period64) Parse(isoPeriod string) error {
 			}
 			isHMS = true
 
-			years, months, weeks, days = Unready, Unready, Unready, Unready
-			hours, minutes, seconds = Armed, Armed, Armed
+			years, months, weeks, days = unready, unready, unready, unready
+			hours, minutes, seconds = armed, armed, armed
 
 			remaining = remaining[1:]
 
@@ -100,20 +100,20 @@ func (period *Period64) Parse(isoPeriod string) error {
 			}
 
 			switch des {
-			case Year:
-				years, err = years.testAndSet(number, Year, &p.years, isoPeriod)
-			case Month:
-				months, err = months.testAndSet(number, Month, &p.months, isoPeriod)
-			case Week:
-				weeks, err = weeks.testAndSet(number, Week, &p.weeks, isoPeriod)
-			case Day:
-				days, err = days.testAndSet(number, Day, &p.days, isoPeriod)
-			case Hour:
-				hours, err = hours.testAndSet(number, Hour, &p.hours, isoPeriod)
-			case Minute:
-				minutes, err = minutes.testAndSet(number, Minute, &p.minutes, isoPeriod)
-			case Second:
-				seconds, err = seconds.testAndSet(number, Second, &p.seconds, isoPeriod)
+			case year:
+				years, err = years.testAndSet(number, year, &p.years, isoPeriod)
+			case month:
+				months, err = months.testAndSet(number, month, &p.months, isoPeriod)
+			case week:
+				weeks, err = weeks.testAndSet(number, week, &p.weeks, isoPeriod)
+			case day:
+				days, err = days.testAndSet(number, day, &p.days, isoPeriod)
+			case hour:
+				hours, err = hours.testAndSet(number, hour, &p.hours, isoPeriod)
+			case minute:
+				minutes, err = minutes.testAndSet(number, minute, &p.minutes, isoPeriod)
+			case second:
+				seconds, err = seconds.testAndSet(number, second, &p.seconds, isoPeriod)
 			default:
 				panic(fmt.Errorf("unreachable %s: '%c'", isoPeriod, des.Byte()))
 			}
@@ -143,21 +143,21 @@ func (period *Period64) Parse(isoPeriod string) error {
 type itemState int
 
 const (
-	Unready itemState = iota
-	Armed
-	Set
+	unready itemState = iota
+	armed
+	set
 )
 
 func (i itemState) testAndSet(number decimal.Decimal, des designator, result *decimal.Decimal, original string) (itemState, error) {
 	switch i {
-	case Unready:
+	case unready:
 		return i, fmt.Errorf("%s: '%c' designator cannot occur here", original, des.Byte())
-	case Set:
+	case set:
 		return i, fmt.Errorf("%s: '%c' designator cannot occur more than once", original, des.Byte())
 	}
 
 	*result = number
-	return Set, nil
+	return set, nil
 }
 
 //-------------------------------------------------------------------------------------------------

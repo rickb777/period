@@ -13,51 +13,51 @@ type designator int8
 
 const (
 	_ designator = iota
-	Second
-	Minute
-	Hour
-	Day
-	Week
-	Month
-	Year
+	second
+	minute
+	hour
+	day
+	week
+	month
+	year
 )
 
 func asDesignator(d byte, isHMS bool) (designator, error) {
 	switch d {
 	case 'S':
-		return Second, nil
+		return second, nil
 	case 'H':
-		return Hour, nil
+		return hour, nil
 	case 'D':
-		return Day, nil
+		return day, nil
 	case 'W':
-		return Week, nil
+		return week, nil
 	case 'Y':
-		return Year, nil
+		return year, nil
 	case 'M':
 		if isHMS {
-			return Minute, nil
+			return minute, nil
 		}
-		return Month, nil
+		return month, nil
 	}
 	return 0, fmt.Errorf("expected a designator Y, M, W, D, H, or S not '%c'", d)
 }
 
 func (d designator) Byte() byte {
 	switch d {
-	case Second:
+	case second:
 		return 'S'
-	case Minute:
+	case minute:
 		return 'M'
-	case Hour:
+	case hour:
 		return 'H'
-	case Day:
+	case day:
 		return 'D'
-	case Week:
+	case week:
 		return 'W'
-	case Month:
+	case month:
 		return 'M'
-	case Year:
+	case year:
 		return 'Y'
 	}
 	panic(strconv.Itoa(int(d)))
@@ -65,19 +65,19 @@ func (d designator) Byte() byte {
 
 //func (d designator) field() string {
 //	switch d {
-//	case Second:
+//	case second:
 //		return "seconds"
-//	case Minute:
+//	case minute:
 //		return "minutes"
-//	case Hour:
+//	case hour:
 //		return "hours"
 //	case Day:
 //		return "days"
-//	case Week:
+//	case week:
 //		return "weeks"
-//	case Month:
+//	case month:
 //		return "months"
-//	case Year:
+//	case year:
 //		return "years"
 //	}
 //	panic(strconv.Itoa(int(d)))

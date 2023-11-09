@@ -80,7 +80,7 @@ func TestPeriodAddSubtract(t *testing.T) {
 //	nNeg := neg(period.years) + neg(period.months) + neg(period.days) + neg(period.hours) + neg(period.minutes) + neg(period.seconds)
 //	g.Expect(nPoz == 0 || nNeg == 0).To(BeTrue(), info+" inconsistent signs")
 //
-//	if period.lastField == Year {
+//	if period.lastField == year {
 //		g.Expect(period.months).To(BeZero(), info+" year fraction exists")
 //		g.Expect(period.weeks).To(BeZero(), info+" year fraction exists")
 //		g.Expect(period.days).To(BeZero(), info+" year fraction exists")
@@ -89,7 +89,7 @@ func TestPeriodAddSubtract(t *testing.T) {
 //		g.Expect(period.seconds).To(BeZero(), info+" year fraction exists")
 //	}
 //
-//	if period.lastField == Month {
+//	if period.lastField == month {
 //		g.Expect(period.weeks).To(BeZero(), info+" month fraction exists")
 //		g.Expect(period.days).To(BeZero(), info+" month fraction exists")
 //		g.Expect(period.hours).To(BeZero(), info+" month fraction exists")
@@ -97,7 +97,7 @@ func TestPeriodAddSubtract(t *testing.T) {
 //		g.Expect(period.seconds).To(BeZero(), info+" month fraction exists")
 //	}
 //
-//	if period.lastField == Week {
+//	if period.lastField == week {
 //		g.Expect(period.days).To(BeZero(), info+" month fraction exists")
 //		g.Expect(period.hours).To(BeZero(), info+" month fraction exists")
 //		g.Expect(period.minutes).To(BeZero(), info+" month fraction exists")
@@ -110,12 +110,12 @@ func TestPeriodAddSubtract(t *testing.T) {
 //		g.Expect(period.seconds).To(BeZero(), info+" day fraction exists")
 //	}
 //
-//	if period.lastField == Hour {
+//	if period.lastField == hour {
 //		g.Expect(period.minutes).To(BeZero(), info+" hour fraction exists")
 //		g.Expect(period.seconds).To(BeZero(), info+" hour fraction exists")
 //	}
 //
-//	if period.lastField == Minute {
+//	if period.lastField == minute {
 //		g.Expect(period.seconds).To(BeZero(), info+" minute fraction exists")
 //	}
 //

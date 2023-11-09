@@ -11,7 +11,7 @@ var (
 	twentyFour  = decimal.MustNew(24, 0)
 	sixty       = decimal.MustNew(60, 0)
 	threeSixSix = decimal.MustNew(366, 0)
-	year        = decimal.MustNew(3652425, 4) // by the Gregorian rule
+	daysPerYear = decimal.MustNew(3652425, 4) // by the Gregorian rule
 )
 
 // Normalise simplifies the fields by propagating large values towards the more significant fields.
@@ -65,7 +65,7 @@ func (period Period64) NormaliseDaysToYears() Period64 {
 		return period
 	}
 
-	ey, rem, err := days.QuoRem(year)
+	ey, rem, err := days.QuoRem(daysPerYear)
 	if err != nil {
 		return period
 	}

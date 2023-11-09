@@ -175,17 +175,17 @@ func (period Period64) WriteTo(w io.Writer) (int64, error) {
 
 	_ = aw.WriteByte('P')
 
-	writeField(aw, period.years, Year)
-	writeField(aw, period.months, Month)
-	writeField(aw, period.weeks, Week)
-	writeField(aw, period.days, Day)
+	writeField(aw, period.years, year)
+	writeField(aw, period.months, month)
+	writeField(aw, period.weeks, week)
+	writeField(aw, period.days, day)
 
 	if period.hours.Coef() != 0 || period.minutes.Coef() != 0 || period.seconds.Coef() != 0 {
 		_ = aw.WriteByte('T')
 
-		writeField(aw, period.hours, Hour)
-		writeField(aw, period.minutes, Minute)
-		writeField(aw, period.seconds, Second)
+		writeField(aw, period.hours, hour)
+		writeField(aw, period.minutes, minute)
+		writeField(aw, period.seconds, second)
 	}
 
 	return uwSum(aw)
