@@ -194,44 +194,44 @@ var oneYearApprox = 31556952 * time.Second // 365.2425 days
 //
 //	cases := []struct {
 //		value  string
-//		period Period64
+//		period Period
 //	}{
 //		// note: the negative cases are also covered (see below)
 //
-//		{"P0D", Period64{}},
+//		{"P0D", Period{}},
 //		// ones
-//		{"P1Y", Period64{years: 10}},
-//		{"P1M", Period64{months: 10}},
-//		{"P1W", Period64{days: 70}},
-//		{"P1D", Period64{days: 10}},
-//		{"PT1H", Period64{hours: 10}},
-//		{"PT1M", Period64{minutes: 10}},
-//		{"PT1S", Period64{seconds: 10}},
+//		{"P1Y", Period{years: 10}},
+//		{"P1M", Period{months: 10}},
+//		{"P1W", Period{days: 70}},
+//		{"P1D", Period{days: 10}},
+//		{"PT1H", Period{hours: 10}},
+//		{"PT1M", Period{minutes: 10}},
+//		{"PT1S", Period{seconds: 10}},
 //		// smallest
-//		{"P0.1Y", Period64{years: 1}},
-//		{"P0.1M", Period64{months: 1}},
-//		{"P0.7D", Period64{days: 7}},
-//		{"P0.1D", Period64{days: 1}},
-//		{"PT0.1H", Period64{hours: 1}},
-//		{"PT0.1M", Period64{minutes: 1}},
-//		{"PT0.1S", Period64{seconds: 1}},
+//		{"P0.1Y", Period{years: 1}},
+//		{"P0.1M", Period{months: 1}},
+//		{"P0.7D", Period{days: 7}},
+//		{"P0.1D", Period{days: 1}},
+//		{"PT0.1H", Period{hours: 1}},
+//		{"PT0.1M", Period{minutes: 1}},
+//		{"PT0.1S", Period{seconds: 1}},
 //
-//		{"P3Y", Period64{years: 30}},
-//		{"P6M", Period64{months: 60}},
-//		{"P5W", Period64{days: 350}},
-//		{"P4W", Period64{days: 280}},
-//		{"P4D", Period64{days: 40}},
-//		{"PT12H", Period64{hours: 120}},
-//		{"PT30M", Period64{minutes: 300}},
-//		{"PT5S", Period64{seconds: 50}},
-//		{"P3Y6M39DT1H2M4.9S", Period64{years: 30, months: 60, days: 390, hours: 10, minutes: 20, seconds: 49}},
+//		{"P3Y", Period{years: 30}},
+//		{"P6M", Period{months: 60}},
+//		{"P5W", Period{days: 350}},
+//		{"P4W", Period{days: 280}},
+//		{"P4D", Period{days: 40}},
+//		{"PT12H", Period{hours: 120}},
+//		{"PT30M", Period{minutes: 300}},
+//		{"PT5S", Period{seconds: 50}},
+//		{"P3Y6M39DT1H2M4.9S", Period{years: 30, months: 60, days: 390, hours: 10, minutes: 20, seconds: 49}},
 //
-//		{"P2.5Y", Period64{years: 25}},
-//		{"P2.5M", Period64{months: 25}},
-//		{"P2.5D", Period64{days: 25}},
-//		{"PT2.5H", Period64{hours: 25}},
-//		{"PT2.5M", Period64{minutes: 25}},
-//		{"PT2.5S", Period64{seconds: 25}},
+//		{"P2.5Y", Period{years: 25}},
+//		{"P2.5M", Period{months: 25}},
+//		{"P2.5D", Period{days: 25}},
+//		{"PT2.5H", Period{hours: 25}},
+//		{"PT2.5M", Period{minutes: 25}},
+//		{"PT2.5S", Period{seconds: 25}},
 //	}
 //	for i, c := range cases {
 //		sp := c.period.String()
