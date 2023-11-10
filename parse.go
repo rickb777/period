@@ -134,7 +134,7 @@ func (period *Period) Parse(isoPeriod string) error {
 		return fmt.Errorf("%s: expected 'Y', 'M', 'W', 'D', 'H', 'M', or 'S' designator", isoPeriod)
 	}
 
-	*period = p.NormaliseSign()
+	*period = p.normaliseSign()
 	return nil
 }
 

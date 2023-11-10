@@ -61,7 +61,7 @@ func New(years, months, weeks, days, hours, minutes, seconds int) Period {
 		days:    decimal.MustNew(int64(days), 0),
 		hours:   decimal.MustNew(int64(hours), 0),
 		minutes: decimal.MustNew(int64(minutes), 0),
-		seconds: decimal.MustNew(int64(seconds), 0)}.NormaliseSign()
+		seconds: decimal.MustNew(int64(seconds), 0)}.normaliseSign()
 }
 
 // NewDecimal creates a period from seven decimal values. The fields are trimmed but no normalisation
@@ -112,14 +112,14 @@ func NewDecimal(years, months, weeks, days, hours, minutes, seconds decimal.Deci
 		hours:   hours.Trim(0),
 		minutes: minutes.Trim(0),
 		seconds: seconds.Trim(0),
-	}.NormaliseSign(), err
+	}.normaliseSign(), err
 }
 
 // NewOf converts a time duration to a Period.
 // The result just a number of seconds, possibly including a fraction. It is not normalised; see Normalise().
 func NewOf(duration time.Duration) Period {
 	seconds := decimal.MustNew(int64(duration), 9).Trim(0)
-	return Period{seconds: seconds}.NormaliseSign()
+	return Period{seconds: seconds}.normaliseSign()
 }
 
 //-------------------------------------------------------------------------------------------------

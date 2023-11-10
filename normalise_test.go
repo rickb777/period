@@ -303,7 +303,7 @@ func Test_NormaliseSign(t *testing.T) {
 
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.expected), func(t *testing.T) {
-			sp1 := c.input.NormaliseSign()
+			sp1 := c.input.normaliseSign()
 			g.Expect(sp1.Period()).To(Equal(c.expected))
 		})
 	}
@@ -323,13 +323,14 @@ func TestPeriodToDuration(t *testing.T) {
 	}{
 		// note: the negative cases are also covered (see below)
 
-		{"P0D", time.Duration(0), true},
+		{"P0D", 0, true},
 
 		{"PT1S", 1 * time.Second, true},
 		{"PT0.1S", 100 * time.Millisecond, true},
 		{"PT0.001S", time.Millisecond, true},
 		{"PT0.000001S", time.Microsecond, true},
 		{"PT0.000000001S", time.Nanosecond, true},
+		{"PT0.0000000001S", 0, false},
 		{"PT3276S", 3276 * time.Second, true},
 
 		{"PT1M", 60 * time.Second, true},
@@ -337,6 +338,7 @@ func TestPeriodToDuration(t *testing.T) {
 		{"PT0.0001M", 6 * time.Millisecond, true},
 		{"PT0.0000001M", 6 * time.Microsecond, true},
 		{"PT0.0000000001M", 6 * time.Nanosecond, true},
+		{"PT0.00000000001M", 0, false},
 		{"PT3276M", 3276 * time.Minute, true},
 
 		{"PT1H", 3600 * time.Second, true},
@@ -345,6 +347,7 @@ func TestPeriodToDuration(t *testing.T) {
 		{"PT0.00001H", 36 * time.Millisecond, true},
 		{"PT0.00000001H", 36 * time.Microsecond, true},
 		{"PT0.00000000001H", 36 * time.Nanosecond, true},
+		{"PT0.0000000000001H", 0, false},
 		{"PT3220H", 3220 * time.Hour, true},
 
 		{"P1D", 24 * time.Hour, false},
@@ -357,17 +360,19 @@ func TestPeriodToDuration(t *testing.T) {
 		{"P10000W", 10000 * 7 * 24 * time.Hour, false},
 		{"P1M", oneMonthApprox, false},
 		{"P0.1M", oneMonthApprox / 10, false},
-		{"P1000M", 1000 * oneMonthApprox, false},
+		{"P3504M", 3504 * oneMonthApprox, false}, // 292 years
 		{"P1Y", oneYearApprox, false},
 		{"P0.1Y", oneYearApprox / 10, false},
-		{"P100Y", 100 * oneYearApprox, false},
+		{"P292Y", 292 * oneYearApprox, false}, // time.Duration represents up to 292 years
 		// long second spans
-		{"PT86400S", 86400 * time.Second, true},
+		{"PT86400000S", 86400000 * time.Second, true},
 	}
 
 	for i, c := range cases {
-		testPeriodToDuration(t, i, c.value, c.duration, c.precise)
-		testPeriodToDuration(t, i, "-"+c.value, -c.duration, c.precise)
+		t.Run(fmt.Sprintf("%d %s", i, c.value), func(t *testing.T) {
+			testPeriodToDuration(t, i, c.value, c.duration, c.precise)
+			testPeriodToDuration(t, i, "-"+c.value, -c.duration, c.precise)
+		})
 	}
 }
 

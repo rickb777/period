@@ -165,9 +165,9 @@ func isSimple(larger, smaller decimal.Decimal) bool {
 	return smaller.IsZero() && larger.Scale() == 0
 }
 
-// NormaliseSign swaps the signs of all fields so that the largest non-zero field is positive and the overall sign
+// normaliseSign swaps the signs of all fields so that the largest non-zero field is positive and the overall sign
 // indicates the original sign. Otherwise it has no effect.
-func (period Period) NormaliseSign() Period {
+func (period Period) normaliseSign() Period {
 	if period.years.Sign() > 0 {
 		return period
 	} else if period.years.Sign() < 0 {
@@ -237,6 +237,8 @@ func (period Period) negateAllFields() Period {
 // be precise because the result may depend on knowing date and timezone information. So
 // the duration is estimated on the basis of a year being 365.2425 days (as per Gregorian
 // calendar rules) and a month being 1/12 of a that; days are all assumed to be 24 hours long.
+//
+// Note that time.Duration is limited to the range 1 nanosecond to about 292 years maximum.
 func (period Period) DurationApprox() time.Duration {
 	d, _ := period.Duration()
 	return d
@@ -250,42 +252,44 @@ func (period Period) DurationApprox() time.Duration {
 // be precise because the result may depend on knowing date and timezone information. So
 // the duration is estimated on the basis of a year being 365.2425 days (as per Gregorian
 // calendar rules) and a month being 1/12 of a that; days are all assumed to be 24 hours long.
+//
+// For periods shorter than one nanosecond, the duration will be zero and the precise flag
+// will be returned false.
+//
+// Note that time.Duration is limited to the range 1 nanosecond to about 292 years maximum.
 func (period Period) Duration() (time.Duration, bool) {
 	sign := time.Duration(period.Sign())
-	tdE9 := time.Duration(totalDaysApproxE9(period)) * secondsPerDay
-	stE9 := totalSeconds(period)
-	return sign * (tdE9 + stE9), tdE9 == 0
+	daysE9, ok1 := totalDaysApproxE9(period)
+	tdE9 := time.Duration(daysE9) * secondsPerDay
+	stE9, ok2 := totalSeconds(period)
+	return sign * (tdE9 + stE9), tdE9 == 0 && ok1 && ok2
 }
 
-func totalDaysApproxE9(period Period) int64 {
-	dd := fieldDuration(period.days, oneE9)
-	ww := fieldDuration(period.weeks, 7*oneE9)
-	mm := fieldDuration(period.months, daysPerMonthE6*oneE3)
-	yy := fieldDuration(period.years, daysPerYearE6*oneE3)
-	return dd + ww + mm + yy
+func totalDaysApproxE9(period Period) (int64, bool) {
+	dd, okd := fieldDuration(period.days, oneE9)
+	ww, okw := fieldDuration(period.weeks, 7*oneE9)
+	mm, okm := fieldDuration(period.months, daysPerMonthE6*oneE3)
+	yy, oky := fieldDuration(period.years, daysPerYearE6*oneE3)
+	return dd + ww + mm + yy, okd && okw && okm && oky
 }
 
-func totalSeconds(period Period) time.Duration {
-	hh := fieldDuration(period.hours, int64(time.Hour))
-	mm := fieldDuration(period.minutes, int64(time.Minute))
-	ss := fieldDuration(period.seconds, int64(time.Second))
-	return time.Duration(hh + mm + ss)
+func totalSeconds(period Period) (time.Duration, bool) {
+	hh, okh := fieldDuration(period.hours, int64(time.Hour))
+	mm, okm := fieldDuration(period.minutes, int64(time.Minute))
+	ss, oks := fieldDuration(period.seconds, int64(time.Second))
+	return time.Duration(hh + mm + ss), okh && okm && oks
 }
 
-func fieldDuration(field decimal.Decimal, factor int64) (d int64) {
+func fieldDuration(field decimal.Decimal, factor int64) (int64, bool) {
 	if field.Coef() == 0 {
-		return 0
+		return 0, true
 	}
 
 	for i := field.Scale(); i > 0; i-- {
 		factor /= 10
 	}
 
-	if factor != 0 {
-		d += int64(field.Sign()) * int64(field.Coef()) * factor
-	}
-
-	return d
+	return int64(field.Sign()) * int64(field.Coef()) * factor, factor > 0
 }
 
 const (

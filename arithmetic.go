@@ -37,7 +37,7 @@ func (period Period) Add(other Period) (Period, error) {
 	minutes, e6 := left.minutes.Add(right.minutes)
 	seconds, e7 := left.seconds.Add(right.seconds)
 
-	result := Period{years: years, months: months, weeks: weeks, days: days, hours: hours, minutes: minutes, seconds: seconds}.Normalise(true).NormaliseSign()
+	result := Period{years: years, months: months, weeks: weeks, days: days, hours: hours, minutes: minutes, seconds: seconds}.Normalise(true).normaliseSign()
 	return result, errors.Join(e1, e2, e3, e4, e5, e6, e7)
 }
 
