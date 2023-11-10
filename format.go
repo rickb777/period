@@ -68,7 +68,7 @@ func writeField(w usefulWriter, field decimal.Decimal, fieldDesignator designato
 
 //-------------------------------------------------------------------------------------------------
 
-// Format converts the period to human-readable form using the default localisation.
+// Format converts the period to human-readable form using the English localisation.
 // To adjust the result, see the Normalise, NormaliseDaysToYears, Simplify and SimplifyWeeksToDays methods.
 func (period Period) Format() string {
 	return period.FormatLocalised(EnglishFormatLocalisation)
@@ -110,34 +110,32 @@ func appendNonBlank(parts []string, s string) []string {
 }
 
 type FormatLocalisation struct {
-	// ZeroValue is the string that represents a zero period "P0D"
+	// ZeroValue is the string that represents a zero period "P0D".
 	ZeroValue string
 
-	// Negate alters a format wtring when the value is negative
+	// Negate alters a format string when the value is negative.
 	Negate func(string) string
 
-	// the plurals provide the localised format names for each field of the period.
+	// The plurals provide the localised format names for each field of the period.
 	// Each is a sequence of plural cases where the first match is used, otherwise the last one is used.
 	// The last one must include a "%v" placeholder for the number.
 	YearNames, MonthNames, WeekNames, DayNames plural.Plurals
 	HourNames, MinuteNames, SecondNames        plural.Plurals
 }
 
-var (
-	// EnglishFormatLocalisation provides the formatting strings needed to format Period values in vernacular English.
-	EnglishFormatLocalisation = FormatLocalisation{
-		ZeroValue: "zero",
-		Negate:    func(s string) string { return "minus " + s },
+// EnglishFormatLocalisation provides the formatting strings needed to format Period values in vernacular English.
+var EnglishFormatLocalisation = FormatLocalisation{
+	ZeroValue: "zero",
+	Negate:    func(s string) string { return "minus " + s },
 
-		// YearNames provides the English default format names for the years part of the period.
-		// This is a sequence of plurals where the first match is used, otherwise the last one is used.
-		// The last one must include a "%v" placeholder for the number.
-		YearNames:   plural.FromZero("", "%v year", "%v years"),
-		MonthNames:  plural.FromZero("", "%v month", "%v months"),
-		WeekNames:   plural.FromZero("", "%v week", "%v weeks"),
-		DayNames:    plural.FromZero("", "%v day", "%v days"),
-		HourNames:   plural.FromZero("", "%v hour", "%v hours"),
-		MinuteNames: plural.FromZero("", "%v minute", "%v minutes"),
-		SecondNames: plural.FromZero("", "%v second", "%v seconds"),
-	}
-)
+	// YearNames provides the English default format names for the years part of the period.
+	// This is a sequence of plurals where the first match is used, otherwise the last one is used.
+	// The last one must include a "%v" placeholder for the number.
+	YearNames:   plural.FromZero("", "%v year", "%v years"),
+	MonthNames:  plural.FromZero("", "%v month", "%v months"),
+	WeekNames:   plural.FromZero("", "%v week", "%v weeks"),
+	DayNames:    plural.FromZero("", "%v day", "%v days"),
+	HourNames:   plural.FromZero("", "%v hour", "%v hours"),
+	MinuteNames: plural.FromZero("", "%v minute", "%v minutes"),
+	SecondNames: plural.FromZero("", "%v second", "%v seconds"),
+}
