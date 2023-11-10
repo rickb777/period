@@ -101,6 +101,15 @@ func moveWholePartsLeft(larger, smaller, nd decimal.Decimal) (decimal.Decimal, d
 	return l2, r
 }
 
+// SimplifyWeeksToDays adds 7 * the weeks value to the days value, and sets the weeks value to zero.
+func (period Period) SimplifyWeeksToDays() Period {
+	wdays, _ := period.weeks.Mul(seven)
+	days, _ := wdays.Add(period.days)
+	period.days = days
+	period.weeks = decimal.Zero
+	return period
+}
+
 // Simplify simplifies the fields by propagating large values towards the less significant fields.
 // This is akin to converting mixed fractions to improper fractions, across the group of fields.
 // However, existing values are not altered if they are a simple way of expression their period already.

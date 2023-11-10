@@ -147,6 +147,47 @@ func Test_NormaliseDaysToYears(t *testing.T) {
 
 //-------------------------------------------------------------------------------------------------
 
+func Test_SimplifyWeeksToDays(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	cases := []struct {
+		input    ISOString
+		expected ISOString
+	}{
+		// note: the negative cases are also covered (see below)
+
+		{input: "P0D", expected: "P0D"},
+
+		// ones unchanged
+		{input: "P1Y", expected: "P1Y"},
+		{input: "P1M", expected: "P1M"},
+		{input: "P1D", expected: "P1D"},
+		{input: "PT1H", expected: "PT1H"},
+		{input: "PT1M", expected: "PT1M"},
+		{input: "PT1S", expected: "PT1S"},
+
+		// simplified
+		{input: "P1W", expected: "P7D"},
+		{input: "P2W1D", expected: "P15D"},
+		{input: "P10W", expected: "P70D"},
+	}
+
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("%d %s", i, c.expected), func(t *testing.T) {
+			p1 := MustParse(c.input)
+			sp1 := p1.SimplifyWeeksToDays()
+			g.Expect(sp1.Period()).To(Equal(c.expected), "precise +ve case")
+
+			if !p1.IsZero() {
+				sp1n := p1.Negate().SimplifyWeeksToDays()
+				g.Expect(sp1n.Period()).To(Equal("-"+c.expected), "precise -ve case")
+			}
+		})
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
 func Test_Simplify(t *testing.T) {
 	g := NewGomegaWithT(t)
 
@@ -236,7 +277,7 @@ func Test_Simplify(t *testing.T) {
 
 //-------------------------------------------------------------------------------------------------
 
-func Test_NormaliseSign(t *testing.T) {
+func Test_normaliseSign(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	cases := []struct {

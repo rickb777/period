@@ -1,0 +1,139 @@
+// Copyright 2015 Rick Beton. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package period
+
+import (
+	"io"
+	"strings"
+
+	"github.com/govalues/decimal"
+	"github.com/rickb777/plural"
+)
+
+// Period converts the period to ISO-8601 string form.
+// If there is a decimal fraction, it will be rendered using a decimal point separator
+// (not a comma).
+func (period Period) Period() ISOString {
+	return ISOString(period.String())
+}
+
+// ISOString converts the period to ISO-8601 string form.
+// If there is a decimal fraction, it will be rendered using a decimal point separator.
+// (not a comma).
+func (period Period) String() string {
+	buf := &strings.Builder{}
+	_, _ = period.WriteTo(buf)
+	return buf.String()
+}
+
+// WriteTo converts the period to ISO-8601 form.
+func (period Period) WriteTo(w io.Writer) (int64, error) {
+	aw := adapt(w)
+
+	if period == Zero {
+		_, _ = aw.WriteString(string(CanonicalZero))
+		return uwSum(aw)
+	}
+
+	if period.neg {
+		_ = aw.WriteByte('-')
+	}
+
+	_ = aw.WriteByte('P')
+
+	writeField(aw, period.years, year)
+	writeField(aw, period.months, month)
+	writeField(aw, period.weeks, week)
+	writeField(aw, period.days, day)
+
+	if period.hours.Coef() != 0 || period.minutes.Coef() != 0 || period.seconds.Coef() != 0 {
+		_ = aw.WriteByte('T')
+
+		writeField(aw, period.hours, hour)
+		writeField(aw, period.minutes, minute)
+		writeField(aw, period.seconds, second)
+	}
+
+	return uwSum(aw)
+}
+
+func writeField(w usefulWriter, field decimal.Decimal, fieldDesignator designator) {
+	if field.Coef() != 0 {
+		_, _ = w.WriteString(field.String())
+		_ = w.WriteByte(fieldDesignator.Byte())
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
+// Format converts the period to human-readable form using the default localisation.
+// To adjust the result, see the Normalise, NormaliseDaysToYears, Simplify and SimplifyWeeksToDays methods.
+func (period Period) Format() string {
+	return period.FormatLocalised(EnglishFormatLocalisation)
+}
+
+// FormatLocalised converts the period to human-readable form in a localisable way.
+// To adjust the result, see the Normalise, NormaliseDaysToYears, Simplify and SimplifyWeeksToDays methods.
+func (period Period) FormatLocalised(config FormatLocalisation) string {
+	if period.IsZero() {
+		return config.zeroValue
+	}
+
+	parts := make([]string, 0, 7)
+
+	parts = appendNonBlank(parts, formatField(period.years, config.negate, config.yearNames))
+	parts = appendNonBlank(parts, formatField(period.months, config.negate, config.monthNames))
+	parts = appendNonBlank(parts, formatField(period.weeks, config.negate, config.weekNames))
+	parts = appendNonBlank(parts, formatField(period.days, config.negate, config.dayNames))
+	parts = appendNonBlank(parts, formatField(period.hours, config.negate, config.hourNames))
+	parts = appendNonBlank(parts, formatField(period.minutes, config.negate, config.minNames))
+	parts = appendNonBlank(parts, formatField(period.seconds, config.negate, config.secNames))
+
+	return strings.Join(parts, ", ")
+}
+
+func formatField(field decimal.Decimal, negate func(string) string, names plural.Plurals) string {
+	number, _ := field.Float64()
+	if number < 0 {
+		return negate(names.FormatFloat(float32(-number)))
+	}
+	return names.FormatFloat(float32(number))
+}
+
+func appendNonBlank(parts []string, s string) []string {
+	if s == "" {
+		return parts
+	}
+	return append(parts, s)
+}
+
+type FormatLocalisation struct {
+	zeroValue string
+	negate    func(string) string
+
+	// the plurals provide the localised format names for each field of the period.
+	// Each is a sequence of plural cases where the first match is used, otherwise the last one is used.
+	// The last one must include a "%v" placeholder for the number.
+	yearNames, monthNames, weekNames, dayNames, hourNames, minNames, secNames plural.Plurals
+}
+
+var (
+	// EnglishFormatLocalisation provides the formatting strings needed to format Period values in vernacular English.
+	EnglishFormatLocalisation = FormatLocalisation{
+		zeroValue: "zero",
+		negate:    func(s string) string { return "minus " + s },
+
+		// yearNames provides the English default format names for the years part of the period.
+		// This is a sequence of plurals where the first match is used, otherwise the last one is used.
+		// The last one must include a "%v" placeholder for the number.
+		yearNames:  plural.FromZero("", "%v year", "%v years"),
+		monthNames: plural.FromZero("", "%v month", "%v months"),
+		weekNames:  plural.FromZero("", "%v week", "%v weeks"),
+		dayNames:   plural.FromZero("", "%v day", "%v days"),
+		hourNames:  plural.FromZero("", "%v hour", "%v hours"),
+		minNames:   plural.FromZero("", "%v minute", "%v minutes"),
+		secNames:   plural.FromZero("", "%v second", "%v seconds"),
+	}
+)

@@ -7,7 +7,6 @@ package period
 import (
 	"fmt"
 	"github.com/govalues/decimal"
-	"io"
 	"strings"
 	"time"
 )
@@ -140,62 +139,6 @@ func Between(t1, t2 time.Time) Period {
 	}
 
 	return NewOf(t1.Sub(t2)).Negate()
-}
-
-//-------------------------------------------------------------------------------------------------
-
-// Period converts the period to ISO-8601 string form.
-// If there is a decimal fraction, it will be rendered using a decimal point separator
-// (not a comma).
-func (period Period) Period() ISOString {
-	return ISOString(period.String())
-}
-
-// ISOString converts the period to ISO-8601 string form.
-// If there is a decimal fraction, it will be rendered using a decimal point separator.
-// (not a comma).
-func (period Period) String() string {
-	buf := &strings.Builder{}
-	_, _ = period.WriteTo(buf)
-	return buf.String()
-}
-
-// WriteTo converts the period to ISO-8601 form.
-func (period Period) WriteTo(w io.Writer) (int64, error) {
-	aw := adapt(w)
-
-	if period == Zero {
-		_, _ = aw.WriteString(string(CanonicalZero))
-		return uwSum(aw)
-	}
-
-	if period.neg {
-		_ = aw.WriteByte('-')
-	}
-
-	_ = aw.WriteByte('P')
-
-	writeField(aw, period.years, year)
-	writeField(aw, period.months, month)
-	writeField(aw, period.weeks, week)
-	writeField(aw, period.days, day)
-
-	if period.hours.Coef() != 0 || period.minutes.Coef() != 0 || period.seconds.Coef() != 0 {
-		_ = aw.WriteByte('T')
-
-		writeField(aw, period.hours, hour)
-		writeField(aw, period.minutes, minute)
-		writeField(aw, period.seconds, second)
-	}
-
-	return uwSum(aw)
-}
-
-func writeField(w usefulWriter, field decimal.Decimal, fieldDesignator designator) {
-	if field.Coef() != 0 {
-		_, _ = w.WriteString(field.String())
-		_ = w.WriteByte(fieldDesignator.Byte())
-	}
 }
 
 //-------------------------------------------------------------------------------------------------
