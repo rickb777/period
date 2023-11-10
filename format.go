@@ -78,18 +78,18 @@ func (period Period) Format() string {
 // To adjust the result, see the Normalise, NormaliseDaysToYears, Simplify and SimplifyWeeksToDays methods.
 func (period Period) FormatLocalised(config FormatLocalisation) string {
 	if period.IsZero() {
-		return config.zeroValue
+		return config.ZeroValue
 	}
 
 	parts := make([]string, 0, 7)
 
-	parts = appendNonBlank(parts, formatField(period.years, config.negate, config.yearNames))
-	parts = appendNonBlank(parts, formatField(period.months, config.negate, config.monthNames))
-	parts = appendNonBlank(parts, formatField(period.weeks, config.negate, config.weekNames))
-	parts = appendNonBlank(parts, formatField(period.days, config.negate, config.dayNames))
-	parts = appendNonBlank(parts, formatField(period.hours, config.negate, config.hourNames))
-	parts = appendNonBlank(parts, formatField(period.minutes, config.negate, config.minNames))
-	parts = appendNonBlank(parts, formatField(period.seconds, config.negate, config.secNames))
+	parts = appendNonBlank(parts, formatField(period.years, config.Negate, config.YearNames))
+	parts = appendNonBlank(parts, formatField(period.months, config.Negate, config.MonthNames))
+	parts = appendNonBlank(parts, formatField(period.weeks, config.Negate, config.WeekNames))
+	parts = appendNonBlank(parts, formatField(period.days, config.Negate, config.DayNames))
+	parts = appendNonBlank(parts, formatField(period.hours, config.Negate, config.HourNames))
+	parts = appendNonBlank(parts, formatField(period.minutes, config.Negate, config.MinuteNames))
+	parts = appendNonBlank(parts, formatField(period.seconds, config.Negate, config.SecondNames))
 
 	return strings.Join(parts, ", ")
 }
@@ -110,30 +110,34 @@ func appendNonBlank(parts []string, s string) []string {
 }
 
 type FormatLocalisation struct {
-	zeroValue string
-	negate    func(string) string
+	// ZeroValue is the string that represents a zero period "P0D"
+	ZeroValue string
+
+	// Negate alters a format wtring when the value is negative
+	Negate func(string) string
 
 	// the plurals provide the localised format names for each field of the period.
 	// Each is a sequence of plural cases where the first match is used, otherwise the last one is used.
 	// The last one must include a "%v" placeholder for the number.
-	yearNames, monthNames, weekNames, dayNames, hourNames, minNames, secNames plural.Plurals
+	YearNames, MonthNames, WeekNames, DayNames plural.Plurals
+	HourNames, MinuteNames, SecondNames        plural.Plurals
 }
 
 var (
 	// EnglishFormatLocalisation provides the formatting strings needed to format Period values in vernacular English.
 	EnglishFormatLocalisation = FormatLocalisation{
-		zeroValue: "zero",
-		negate:    func(s string) string { return "minus " + s },
+		ZeroValue: "zero",
+		Negate:    func(s string) string { return "minus " + s },
 
-		// yearNames provides the English default format names for the years part of the period.
+		// YearNames provides the English default format names for the years part of the period.
 		// This is a sequence of plurals where the first match is used, otherwise the last one is used.
 		// The last one must include a "%v" placeholder for the number.
-		yearNames:  plural.FromZero("", "%v year", "%v years"),
-		monthNames: plural.FromZero("", "%v month", "%v months"),
-		weekNames:  plural.FromZero("", "%v week", "%v weeks"),
-		dayNames:   plural.FromZero("", "%v day", "%v days"),
-		hourNames:  plural.FromZero("", "%v hour", "%v hours"),
-		minNames:   plural.FromZero("", "%v minute", "%v minutes"),
-		secNames:   plural.FromZero("", "%v second", "%v seconds"),
+		YearNames:   plural.FromZero("", "%v year", "%v years"),
+		MonthNames:  plural.FromZero("", "%v month", "%v months"),
+		WeekNames:   plural.FromZero("", "%v week", "%v weeks"),
+		DayNames:    plural.FromZero("", "%v day", "%v days"),
+		HourNames:   plural.FromZero("", "%v hour", "%v hours"),
+		MinuteNames: plural.FromZero("", "%v minute", "%v minutes"),
+		SecondNames: plural.FromZero("", "%v second", "%v seconds"),
 	}
 )
