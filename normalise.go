@@ -32,7 +32,7 @@ var (
 // If the calculations would lead to arithmetic errors, the current values are kept unaltered.
 //
 // See also NormaliseDaysToYears().
-func (period Period64) Normalise(precise bool) Period64 {
+func (period Period) Normalise(precise bool) Period {
 	// first phase - ripple large numbers to the left
 	period.minutes, period.seconds = moveWholePartsLeft(period.minutes, period.seconds, sixty)
 	period.hours, period.minutes = moveWholePartsLeft(period.hours, period.minutes, sixty)
@@ -54,7 +54,7 @@ func (period Period64) Normalise(precise bool) Period64 {
 // A common use pattern would be to chain this after Normalise, i.e.
 //
 //	p.Normalise(false).NormaliseDaysToYears()
-func (period Period64) NormaliseDaysToYears() Period64 {
+func (period Period) NormaliseDaysToYears() Period {
 	if period.neg {
 		return period.Negate().NormaliseDaysToYears().Negate()
 	}
@@ -119,7 +119,7 @@ func moveWholePartsLeft(larger, smaller, nd decimal.Decimal) (decimal.Decimal, d
 //   - Minutes may become multiples of 60 seconds if the number of seconds is non-zero - both modes.
 //
 // If the calculations would lead to arithmetic errors, the current values are kept unaltered.
-func (period Period64) Simplify(precise bool) Period64 {
+func (period Period) Simplify(precise bool) Period {
 	period.years, period.months = moveToRight(period.years, period.months, twelve)
 	period.weeks, period.days = moveToRight(period.weeks, period.days, seven)
 	if !precise {
@@ -167,7 +167,7 @@ func isSimple(larger, smaller decimal.Decimal) bool {
 
 // NormaliseSign swaps the signs of all fields so that the largest non-zero field is positive and the overall sign
 // indicates the original sign. Otherwise it has no effect.
-func (period Period64) NormaliseSign() Period64 {
+func (period Period) NormaliseSign() Period {
 	if period.years.Sign() > 0 {
 		return period
 	} else if period.years.Sign() < 0 {
@@ -213,12 +213,12 @@ func (period Period64) NormaliseSign() Period64 {
 	return Zero
 }
 
-func (period Period64) flipSign() Period64 {
+func (period Period) flipSign() Period {
 	period.neg = !period.neg
 	return period.negateAllFields()
 }
 
-func (period Period64) negateAllFields() Period64 {
+func (period Period) negateAllFields() Period {
 	period.years = period.years.Neg()
 	period.months = period.months.Neg()
 	period.weeks = period.weeks.Neg()
@@ -237,7 +237,7 @@ func (period Period64) negateAllFields() Period64 {
 // be precise because the result may depend on knowing date and timezone information. So
 // the duration is estimated on the basis of a year being 365.2425 days (as per Gregorian
 // calendar rules) and a month being 1/12 of a that; days are all assumed to be 24 hours long.
-func (period Period64) DurationApprox() time.Duration {
+func (period Period) DurationApprox() time.Duration {
 	d, _ := period.Duration()
 	return d
 }
@@ -250,14 +250,14 @@ func (period Period64) DurationApprox() time.Duration {
 // be precise because the result may depend on knowing date and timezone information. So
 // the duration is estimated on the basis of a year being 365.2425 days (as per Gregorian
 // calendar rules) and a month being 1/12 of a that; days are all assumed to be 24 hours long.
-func (period Period64) Duration() (time.Duration, bool) {
+func (period Period) Duration() (time.Duration, bool) {
 	sign := time.Duration(period.Sign())
 	tdE9 := time.Duration(totalDaysApproxE9(period)) * secondsPerDay
 	stE9 := totalSeconds(period)
 	return sign * (tdE9 + stE9), tdE9 == 0
 }
 
-func totalDaysApproxE9(period Period64) int64 {
+func totalDaysApproxE9(period Period) int64 {
 	dd := fieldDuration(period.days, oneE9)
 	ww := fieldDuration(period.weeks, 7*oneE9)
 	mm := fieldDuration(period.months, daysPerMonthE6*oneE3)
@@ -265,7 +265,7 @@ func totalDaysApproxE9(period Period64) int64 {
 	return dd + ww + mm + yy
 }
 
-func totalSeconds(period Period64) time.Duration {
+func totalSeconds(period Period) time.Duration {
 	hh := fieldDuration(period.hours, int64(time.Hour))
 	mm := fieldDuration(period.minutes, int64(time.Minute))
 	ss := fieldDuration(period.seconds, int64(time.Second))

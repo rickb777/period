@@ -43,19 +43,19 @@ func TestNewHMS(t *testing.T) {
 	const largeInt = math.MaxInt32
 
 	cases := []struct {
-		period                  Period64
+		period                  Period
 		hours, minutes, seconds int
 	}{
 		// note: the negative cases are also covered (see below)
 
 		{}, // zero case
 
-		{period: Period64{seconds: decI(1)}, seconds: 1},
-		{period: Period64{minutes: decI(1)}, minutes: 1},
-		{period: Period64{hours: decI(1)}, hours: 1},
+		{period: Period{seconds: decI(1)}, seconds: 1},
+		{period: Period{minutes: decI(1)}, minutes: 1},
+		{period: Period{hours: decI(1)}, hours: 1},
 
-		{period: Period64{hours: decI(3), minutes: decI(4), seconds: decI(5)}, hours: 3, minutes: 4, seconds: 5},
-		{period: Period64{hours: decI(largeInt), minutes: decI(largeInt), seconds: decI(largeInt)}, hours: largeInt, minutes: largeInt, seconds: largeInt},
+		{period: Period{hours: decI(3), minutes: decI(4), seconds: decI(5)}, hours: 3, minutes: 4, seconds: 5},
+		{period: Period{hours: decI(largeInt), minutes: decI(largeInt), seconds: decI(largeInt)}, hours: largeInt, minutes: largeInt, seconds: largeInt},
 	}
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %dh %dm %ds", i, c.hours, c.minutes, c.seconds), func(t *testing.T) {
@@ -89,20 +89,20 @@ func TestNewYMWD(t *testing.T) {
 	const largeInt = math.MaxInt32
 
 	cases := []struct {
-		period                     Period64
+		period                     Period
 		years, months, weeks, days int
 	}{
 		// note: the negative cases are also covered (see below)
 
 		{}, // zero case
 
-		{period: Period64{days: decI(1)}, days: 1},
-		{period: Period64{weeks: decI(1)}, weeks: 1},
-		{period: Period64{months: decI(1)}, months: 1},
-		{period: Period64{years: decI(1)}, years: 1},
+		{period: Period{days: decI(1)}, days: 1},
+		{period: Period{weeks: decI(1)}, weeks: 1},
+		{period: Period{months: decI(1)}, months: 1},
+		{period: Period{years: decI(1)}, years: 1},
 
-		{period: Period64{years: decI(100), months: decI(222), weeks: decI(404), days: decI(700)}, years: 100, months: 222, weeks: 404, days: 700},
-		{period: Period64{years: decI(largeInt), months: decI(largeInt), weeks: decI(largeInt), days: decI(largeInt)}, years: largeInt, months: largeInt, weeks: largeInt, days: largeInt},
+		{period: Period{years: decI(100), months: decI(222), weeks: decI(404), days: decI(700)}, years: 100, months: 222, weeks: 404, days: 700},
+		{period: Period{years: decI(largeInt), months: decI(largeInt), weeks: decI(largeInt), days: decI(largeInt)}, years: largeInt, months: largeInt, weeks: largeInt, days: largeInt},
 	}
 	for i, c := range cases {
 		pp := NewYMWD(c.years, c.months, c.weeks, c.days)
@@ -141,21 +141,21 @@ func TestNewDecimal(t *testing.T) {
 	)
 
 	cases := []struct {
-		period                     Period64
+		period                     Period
 		years, months, weeks, days decimal.Decimal
 		hours, minutes, seconds    decimal.Decimal
 	}{
 		{}, // zero case
 
-		{period: Period64{seconds: one}, seconds: one},
-		{period: Period64{minutes: one}, minutes: one},
-		{period: Period64{hours: one}, hours: one},
-		{period: Period64{days: one}, days: one},
-		{period: Period64{weeks: one}, weeks: one},
-		{period: Period64{months: one}, months: one},
-		{period: Period64{years: one}, years: one},
+		{period: Period{seconds: one}, seconds: one},
+		{period: Period{minutes: one}, minutes: one},
+		{period: Period{hours: one}, hours: one},
+		{period: Period{days: one}, days: one},
+		{period: Period{weeks: one}, weeks: one},
+		{period: Period{months: one}, months: one},
+		{period: Period{years: one}, years: one},
 
-		{period: Period64{years: largeInt, months: largeInt, weeks: largeInt, days: largeInt, hours: largeInt, minutes: largeInt, seconds: largeInt},
+		{period: Period{years: largeInt, months: largeInt, weeks: largeInt, days: largeInt, hours: largeInt, minutes: largeInt, seconds: largeInt},
 			years: largeInt, months: largeInt, weeks: largeInt, days: largeInt, hours: largeInt, minutes: largeInt, seconds: largeInt},
 	}
 	for i, c := range cases {
@@ -176,11 +176,11 @@ func TestNewDecimal_error(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	cases := []struct {
-		period                     Period64
+		period                     Period
 		years, months, weeks, days decimal.Decimal
 		hours, minutes, seconds    decimal.Decimal
 	}{
-		{period: Period64{years: dec(1, 1), months: dec(2, 1), weeks: dec(3, 1), days: dec(4, 1), hours: dec(5, 1), minutes: dec(6, 1), seconds: dec(7, 1)},
+		{period: Period{years: dec(1, 1), months: dec(2, 1), weeks: dec(3, 1), days: dec(4, 1), hours: dec(5, 1), minutes: dec(6, 1), seconds: dec(7, 1)},
 			years: dec(1, 1), months: dec(2, 1), weeks: dec(3, 1), days: dec(4, 1), hours: dec(5, 1), minutes: dec(6, 1), seconds: dec(7, 1)},
 	}
 	for i, c := range cases {
@@ -204,24 +204,24 @@ func TestNewOf(t *testing.T) {
 	// note: the negative cases are also covered (see below)
 
 	// HMS tests
-	testNewOf(t, 1, time.Nanosecond, Period64{seconds: dec(1, 9)})
-	testNewOf(t, 2, time.Microsecond, Period64{seconds: dec(1, 6)})
-	testNewOf(t, 3, time.Millisecond, Period64{seconds: dec(1, 3)})
-	testNewOf(t, 4, 100*time.Millisecond, Period64{seconds: dec(1, 1)})
-	testNewOf(t, 5, time.Second, Period64{seconds: one})
-	testNewOf(t, 6, time.Minute, Period64{seconds: decI(60)})
-	testNewOf(t, 7, time.Hour, Period64{seconds: decI(3600)})
-	testNewOf(t, 8, time.Hour+time.Minute+time.Second, Period64{seconds: decI(3661)})
-	testNewOf(t, 9, time.Duration(math.MaxInt64), Period64{seconds: dec(math.MaxInt64, 9)})
+	testNewOf(t, 1, time.Nanosecond, Period{seconds: dec(1, 9)})
+	testNewOf(t, 2, time.Microsecond, Period{seconds: dec(1, 6)})
+	testNewOf(t, 3, time.Millisecond, Period{seconds: dec(1, 3)})
+	testNewOf(t, 4, 100*time.Millisecond, Period{seconds: dec(1, 1)})
+	testNewOf(t, 5, time.Second, Period{seconds: one})
+	testNewOf(t, 6, time.Minute, Period{seconds: decI(60)})
+	testNewOf(t, 7, time.Hour, Period{seconds: decI(3600)})
+	testNewOf(t, 8, time.Hour+time.Minute+time.Second, Period{seconds: decI(3661)})
+	testNewOf(t, 9, time.Duration(math.MaxInt64), Period{seconds: dec(math.MaxInt64, 9)})
 }
 
-func testNewOf(t *testing.T, i int, source time.Duration, expected Period64) {
+func testNewOf(t *testing.T, i int, source time.Duration, expected Period) {
 	t.Helper()
 	testNewOf1(t, i, source, expected)
 	testNewOf1(t, i, -source, expected.Negate())
 }
 
-func testNewOf1(t *testing.T, i int, source time.Duration, expected Period64) {
+func testNewOf1(t *testing.T, i int, source time.Duration, expected Period) {
 	t.Helper()
 	g := NewGomegaWithT(t)
 
@@ -240,56 +240,56 @@ func TestBetween(t *testing.T) {
 
 	cases := []struct {
 		a, b     time.Time
-		expected Period64
+		expected Period
 	}{
 		// note: the negative cases are also covered (see below)
 
-		{now, now, Period64{}},
+		{now, now, Period{}},
 
 		// simple positive date calculations
-		{utc(2015, 1, 1, 0, 0, 0, 0), utc(2015, 1, 1, 0, 0, 0, 1), Period64{seconds: dec(1, 3)}},
-		{utc(2015, 1, 1, 0, 0, 0, 0), utc(2015, 2, 2, 1, 1, 1, 1), Period64{weeks: decI(4), days: decI(4), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
-		{utc(2015, 2, 1, 0, 0, 0, 0), utc(2015, 3, 2, 1, 1, 1, 1), Period64{weeks: decI(4), days: decI(1), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
-		{utc(2015, 3, 1, 0, 0, 0, 0), utc(2015, 4, 2, 1, 1, 1, 1), Period64{weeks: decI(4), days: decI(4), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
-		{utc(2015, 4, 1, 0, 0, 0, 0), utc(2015, 5, 2, 1, 1, 1, 1), Period64{weeks: decI(4), days: decI(3), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
-		{utc(2015, 5, 1, 0, 0, 0, 0), utc(2015, 6, 2, 1, 1, 1, 1), Period64{weeks: decI(4), days: decI(4), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
-		{utc(2015, 6, 1, 0, 0, 0, 0), utc(2015, 7, 2, 1, 1, 1, 1), Period64{weeks: decI(4), days: decI(3), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
-		{utc(2015, 1, 1, 0, 0, 0, 0), utc(2015, 7, 2, 1, 1, 1, 1), Period64{weeks: decI(26), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 1, 1, 0, 0, 0, 0), utc(2015, 1, 1, 0, 0, 0, 1), Period{seconds: dec(1, 3)}},
+		{utc(2015, 1, 1, 0, 0, 0, 0), utc(2015, 2, 2, 1, 1, 1, 1), Period{weeks: decI(4), days: decI(4), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 2, 1, 0, 0, 0, 0), utc(2015, 3, 2, 1, 1, 1, 1), Period{weeks: decI(4), days: decI(1), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 3, 1, 0, 0, 0, 0), utc(2015, 4, 2, 1, 1, 1, 1), Period{weeks: decI(4), days: decI(4), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 4, 1, 0, 0, 0, 0), utc(2015, 5, 2, 1, 1, 1, 1), Period{weeks: decI(4), days: decI(3), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 5, 1, 0, 0, 0, 0), utc(2015, 6, 2, 1, 1, 1, 1), Period{weeks: decI(4), days: decI(4), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 6, 1, 0, 0, 0, 0), utc(2015, 7, 2, 1, 1, 1, 1), Period{weeks: decI(4), days: decI(3), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 1, 1, 0, 0, 0, 0), utc(2015, 7, 2, 1, 1, 1, 1), Period{weeks: decI(26), hours: decI(1), minutes: decI(1), seconds: dec(1001, 3)}},
 
 		// less than one month
-		{utc(2016, 1, 2, 0, 0, 0, 0), utc(2016, 2, 1, 0, 0, 0, 0), Period64{weeks: decI(4), days: decI(2)}},
-		{utc(2015, 2, 2, 0, 0, 0, 0), utc(2015, 3, 1, 0, 0, 0, 0), Period64{weeks: decI(3), days: decI(6)}}, // non-leap
-		{utc(2016, 2, 2, 0, 0, 0, 0), utc(2016, 3, 1, 0, 0, 0, 0), Period64{weeks: decI(4)}},                // leap year
-		{utc(2016, 3, 2, 0, 0, 0, 0), utc(2016, 4, 1, 0, 0, 0, 0), Period64{weeks: decI(4), days: decI(2)}},
-		{utc(2016, 4, 2, 0, 0, 0, 0), utc(2016, 5, 1, 0, 0, 0, 0), Period64{weeks: decI(4), days: decI(1)}},
-		{utc(2016, 5, 2, 0, 0, 0, 0), utc(2016, 6, 1, 0, 0, 0, 0), Period64{weeks: decI(4), days: decI(2)}},
-		{utc(2016, 6, 2, 0, 0, 0, 0), utc(2016, 7, 1, 0, 0, 0, 0), Period64{weeks: decI(4), days: decI(1)}},
+		{utc(2016, 1, 2, 0, 0, 0, 0), utc(2016, 2, 1, 0, 0, 0, 0), Period{weeks: decI(4), days: decI(2)}},
+		{utc(2015, 2, 2, 0, 0, 0, 0), utc(2015, 3, 1, 0, 0, 0, 0), Period{weeks: decI(3), days: decI(6)}}, // non-leap
+		{utc(2016, 2, 2, 0, 0, 0, 0), utc(2016, 3, 1, 0, 0, 0, 0), Period{weeks: decI(4)}},                // leap year
+		{utc(2016, 3, 2, 0, 0, 0, 0), utc(2016, 4, 1, 0, 0, 0, 0), Period{weeks: decI(4), days: decI(2)}},
+		{utc(2016, 4, 2, 0, 0, 0, 0), utc(2016, 5, 1, 0, 0, 0, 0), Period{weeks: decI(4), days: decI(1)}},
+		{utc(2016, 5, 2, 0, 0, 0, 0), utc(2016, 6, 1, 0, 0, 0, 0), Period{weeks: decI(4), days: decI(2)}},
+		{utc(2016, 6, 2, 0, 0, 0, 0), utc(2016, 7, 1, 0, 0, 0, 0), Period{weeks: decI(4), days: decI(1)}},
 
 		// BST drops an hour at the daylight-saving transition
-		{utc(2015, 1, 1, 0, 0, 0, 0), bst(2015, 7, 2, 1, 1, 1, 1), Period64{weeks: decI(26), minutes: decI(1), seconds: dec(1001, 3)}},
+		{utc(2015, 1, 1, 0, 0, 0, 0), bst(2015, 7, 2, 1, 1, 1, 1), Period{weeks: decI(26), minutes: decI(1), seconds: dec(1001, 3)}},
 
 		// daytime only
-		{utc(2015, 1, 1, 2, 3, 4, 0), utc(2015, 1, 1, 2, 3, 4, 500), Period64{seconds: dec(5, 1)}},
-		{utc(2015, 1, 1, 2, 3, 4, 0), utc(2015, 1, 1, 4, 4, 7, 500), Period64{hours: decI(2), minutes: decI(1), seconds: dec(35, 1)}},
-		{utc(2015, 1, 1, 2, 3, 4, 500), utc(2015, 1, 1, 4, 4, 7, 0), Period64{hours: decI(2), minutes: decI(1), seconds: dec(25, 1)}},
+		{utc(2015, 1, 1, 2, 3, 4, 0), utc(2015, 1, 1, 2, 3, 4, 500), Period{seconds: dec(5, 1)}},
+		{utc(2015, 1, 1, 2, 3, 4, 0), utc(2015, 1, 1, 4, 4, 7, 500), Period{hours: decI(2), minutes: decI(1), seconds: dec(35, 1)}},
+		{utc(2015, 1, 1, 2, 3, 4, 500), utc(2015, 1, 1, 4, 4, 7, 0), Period{hours: decI(2), minutes: decI(1), seconds: dec(25, 1)}},
 
 		// different dates and times
-		{utc(2015, 2, 1, 1, 0, 0, 0), utc(2015, 5, 30, 5, 6, 7, 0), Period64{weeks: decI(16), days: decI(6), hours: decI(4), minutes: decI(6), seconds: decI(7)}},
-		{utc(2015, 2, 1, 1, 0, 0, 0), bst(2015, 5, 30, 5, 6, 7, 0), Period64{weeks: decI(16), days: decI(6), hours: decI(3), minutes: decI(6), seconds: decI(7)}},
+		{utc(2015, 2, 1, 1, 0, 0, 0), utc(2015, 5, 30, 5, 6, 7, 0), Period{weeks: decI(16), days: decI(6), hours: decI(4), minutes: decI(6), seconds: decI(7)}},
+		{utc(2015, 2, 1, 1, 0, 0, 0), bst(2015, 5, 30, 5, 6, 7, 0), Period{weeks: decI(16), days: decI(6), hours: decI(3), minutes: decI(6), seconds: decI(7)}},
 
 		// earlier month in later year
-		{utc(2015, 12, 22, 0, 0, 0, 0), utc(2016, 1, 10, 5, 6, 7, 0), Period64{weeks: decI(2), days: decI(5), hours: decI(5), minutes: decI(6), seconds: decI(7)}},
-		{utc(2015, 2, 11, 5, 6, 7, 500), utc(2016, 1, 10, 0, 0, 0, 0), Period64{weeks: decI(47), days: decI(3), hours: decI(18), minutes: decI(53), seconds: dec(525, 1)}},
+		{utc(2015, 12, 22, 0, 0, 0, 0), utc(2016, 1, 10, 5, 6, 7, 0), Period{weeks: decI(2), days: decI(5), hours: decI(5), minutes: decI(6), seconds: decI(7)}},
+		{utc(2015, 2, 11, 5, 6, 7, 500), utc(2016, 1, 10, 0, 0, 0, 0), Period{weeks: decI(47), days: decI(3), hours: decI(18), minutes: decI(53), seconds: dec(525, 1)}},
 
 		// larger ranges
-		{utc(2009, 1, 1, 0, 0, 1, 0), utc(2016, 12, 31, 0, 0, 2, 0), Period64{weeks: decI(417), days: decI(2), seconds: decI(1)}},
-		{utc(2009, 1, 1, 0, 0, 1, 0), utc(2017, 12, 21, 0, 0, 2, 0), Period64{weeks: decI(468), days: decI(0), seconds: decI(1)}},
-		{utc(2009, 1, 1, 0, 0, 1, 0), utc(2017, 12, 22, 0, 0, 2, 0), Period64{weeks: decI(468), days: decI(1), seconds: decI(1)}},
-		{utc(2009, 1, 1, 10, 10, 10, 00), utc(2017, 12, 23, 5, 5, 5, 5), Period64{weeks: decI(468), days: decI(1), hours: decI(18), minutes: decI(54), seconds: dec(55005, 3)}},
-		{utc(1900, 1, 1, 0, 0, 1, 0), utc(2009, 12, 31, 0, 0, 2, 0), Period64{weeks: decI(5739), days: decI(3), seconds: decI(1)}},
+		{utc(2009, 1, 1, 0, 0, 1, 0), utc(2016, 12, 31, 0, 0, 2, 0), Period{weeks: decI(417), days: decI(2), seconds: decI(1)}},
+		{utc(2009, 1, 1, 0, 0, 1, 0), utc(2017, 12, 21, 0, 0, 2, 0), Period{weeks: decI(468), days: decI(0), seconds: decI(1)}},
+		{utc(2009, 1, 1, 0, 0, 1, 0), utc(2017, 12, 22, 0, 0, 2, 0), Period{weeks: decI(468), days: decI(1), seconds: decI(1)}},
+		{utc(2009, 1, 1, 10, 10, 10, 00), utc(2017, 12, 23, 5, 5, 5, 5), Period{weeks: decI(468), days: decI(1), hours: decI(18), minutes: decI(54), seconds: dec(55005, 3)}},
+		{utc(1900, 1, 1, 0, 0, 1, 0), utc(2009, 12, 31, 0, 0, 2, 0), Period{weeks: decI(5739), days: decI(3), seconds: decI(1)}},
 
-		{japan(2021, 3, 1, 0, 0, 0, 0), japan(2021, 9, 7, 0, 0, 0, 0), Period64{weeks: decI(27), days: decI(1)}},
-		{japan(2021, 3, 1, 0, 0, 0, 0), utc(2021, 9, 7, 0, 0, 0, 0), Period64{weeks: decI(27), days: decI(1), hours: decI(9)}},
+		{japan(2021, 3, 1, 0, 0, 0, 0), japan(2021, 9, 7, 0, 0, 0, 0), Period{weeks: decI(27), days: decI(1)}},
+		{japan(2021, 3, 1, 0, 0, 0, 0), utc(2021, 9, 7, 0, 0, 0, 0), Period{weeks: decI(27), days: decI(1), hours: decI(9)}},
 	}
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.expected), func(t *testing.T) {
@@ -309,59 +309,59 @@ func Test_String(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	cases := []struct {
-		expected Period
-		p64      Period64
+		expected ISOString
+		p64      Period
 	}{
 		// note: the negative cases are also covered (see below)
 
-		{expected: "P0D", p64: Period64{}},
+		{expected: "P0D", p64: Period{}},
 
 		// ones
-		{expected: "P1Y", p64: Period64{years: one}},
-		{expected: "P1M", p64: Period64{months: one}},
-		{expected: "P1W", p64: Period64{weeks: one}},
-		{expected: "P1D", p64: Period64{days: one}},
-		{expected: "PT1H", p64: Period64{hours: one}},
-		{expected: "PT1M", p64: Period64{minutes: one}},
-		{expected: "PT1S", p64: Period64{seconds: one}},
+		{expected: "P1Y", p64: Period{years: one}},
+		{expected: "P1M", p64: Period{months: one}},
+		{expected: "P1W", p64: Period{weeks: one}},
+		{expected: "P1D", p64: Period{days: one}},
+		{expected: "PT1H", p64: Period{hours: one}},
+		{expected: "PT1M", p64: Period{minutes: one}},
+		{expected: "PT1S", p64: Period{seconds: one}},
 
 		// small fraction
-		{expected: "P0.000000001Y", p64: Period64{years: dec(1, 9)}},
-		{expected: "P0.000000001M", p64: Period64{months: dec(1, 9)}},
-		{expected: "P0.000000001W", p64: Period64{weeks: dec(1, 9)}},
-		{expected: "P0.000000001D", p64: Period64{days: dec(1, 9)}},
-		{expected: "PT0.000000001H", p64: Period64{hours: dec(1, 9)}},
-		{expected: "PT0.000000001M", p64: Period64{minutes: dec(1, 9)}},
-		{expected: "PT0.000000001S", p64: Period64{seconds: dec(1, 9)}},
+		{expected: "P0.000000001Y", p64: Period{years: dec(1, 9)}},
+		{expected: "P0.000000001M", p64: Period{months: dec(1, 9)}},
+		{expected: "P0.000000001W", p64: Period{weeks: dec(1, 9)}},
+		{expected: "P0.000000001D", p64: Period{days: dec(1, 9)}},
+		{expected: "PT0.000000001H", p64: Period{hours: dec(1, 9)}},
+		{expected: "PT0.000000001M", p64: Period{minutes: dec(1, 9)}},
+		{expected: "PT0.000000001S", p64: Period{seconds: dec(1, 9)}},
 
 		// 1 + small
-		{expected: "P1.000000001Y", p64: Period64{years: add(one, dec(1, 9))}},
-		{expected: "P1.000000001M", p64: Period64{months: add(one, dec(1, 9))}},
-		{expected: "P1.000000001W", p64: Period64{weeks: add(one, dec(1, 9))}},
-		{expected: "P1.000000001D", p64: Period64{days: add(one, dec(1, 9))}},
-		{expected: "PT1.000000001H", p64: Period64{hours: add(one, dec(1, 9))}},
-		{expected: "PT1.000000001M", p64: Period64{minutes: add(one, dec(1, 9))}},
-		{expected: "PT1.000000001S", p64: Period64{seconds: add(one, dec(1, 9))}},
+		{expected: "P1.000000001Y", p64: Period{years: add(one, dec(1, 9))}},
+		{expected: "P1.000000001M", p64: Period{months: add(one, dec(1, 9))}},
+		{expected: "P1.000000001W", p64: Period{weeks: add(one, dec(1, 9))}},
+		{expected: "P1.000000001D", p64: Period{days: add(one, dec(1, 9))}},
+		{expected: "PT1.000000001H", p64: Period{hours: add(one, dec(1, 9))}},
+		{expected: "PT1.000000001M", p64: Period{minutes: add(one, dec(1, 9))}},
+		{expected: "PT1.000000001S", p64: Period{seconds: add(one, dec(1, 9))}},
 
 		// other fractions
-		{expected: "P0.00000001Y", p64: Period64{years: dec(1, 8)}},
-		{expected: "P0.0000001Y", p64: Period64{years: dec(1, 7)}},
-		{expected: "P0.000001Y", p64: Period64{years: dec(1, 6)}},
-		{expected: "P0.00001Y", p64: Period64{years: dec(1, 5)}},
-		{expected: "P0.0001Y", p64: Period64{years: dec(1, 4)}},
-		{expected: "P0.001Y", p64: Period64{years: dec(1, 3)}},
-		{expected: "P0.01Y", p64: Period64{years: dec(1, 2)}},
-		{expected: "P0.1Y", p64: Period64{years: dec(1, 1)}},
+		{expected: "P0.00000001Y", p64: Period{years: dec(1, 8)}},
+		{expected: "P0.0000001Y", p64: Period{years: dec(1, 7)}},
+		{expected: "P0.000001Y", p64: Period{years: dec(1, 6)}},
+		{expected: "P0.00001Y", p64: Period{years: dec(1, 5)}},
+		{expected: "P0.0001Y", p64: Period{years: dec(1, 4)}},
+		{expected: "P0.001Y", p64: Period{years: dec(1, 3)}},
+		{expected: "P0.01Y", p64: Period{years: dec(1, 2)}},
+		{expected: "P0.1Y", p64: Period{years: dec(1, 1)}},
 
-		{expected: "P3.9Y", p64: Period64{years: decS("3.9")}},
-		{expected: "P3Y6.9M", p64: Period64{years: decI(3), months: decS("6.9")}},
-		{expected: "P3Y6M2.9W", p64: Period64{years: decI(3), months: decI(6), weeks: decS("2.9")}},
-		{expected: "P3Y6M2W4.9D", p64: Period64{years: decI(3), months: decI(6), weeks: decI(2), days: decS("4.9")}},
-		{expected: "P3Y6M2W4DT1.9H", p64: Period64{years: decI(3), months: decI(6), weeks: decI(2), days: decI(4), hours: decS("1.9")}},
-		{expected: "P3Y6M2W4DT1H5.9M", p64: Period64{years: decI(3), months: decI(6), weeks: decI(2), days: decI(4), hours: one, minutes: decS("5.9")}},
-		{expected: "P3Y6M2W4DT1H5M7.9S", p64: Period64{years: decI(3), months: decI(6), weeks: decI(2), days: decI(4), hours: one, minutes: decI(5), seconds: decS("7.9")}},
-		{expected: "-P3Y6M2W4DT1H5M7.9S", p64: Period64{years: decI(3), months: decI(6), weeks: decI(2), days: decI(4), hours: one, minutes: decI(5), seconds: decS("7.9"), neg: true}},
-		{expected: "P-3Y6M-2W4DT-1H5M-7.9S", p64: Period64{years: decI(-3), months: decI(6), weeks: decI(-2), days: decI(4), hours: decI(-1), minutes: decI(5), seconds: decS("-7.9")}},
+		{expected: "P3.9Y", p64: Period{years: decS("3.9")}},
+		{expected: "P3Y6.9M", p64: Period{years: decI(3), months: decS("6.9")}},
+		{expected: "P3Y6M2.9W", p64: Period{years: decI(3), months: decI(6), weeks: decS("2.9")}},
+		{expected: "P3Y6M2W4.9D", p64: Period{years: decI(3), months: decI(6), weeks: decI(2), days: decS("4.9")}},
+		{expected: "P3Y6M2W4DT1.9H", p64: Period{years: decI(3), months: decI(6), weeks: decI(2), days: decI(4), hours: decS("1.9")}},
+		{expected: "P3Y6M2W4DT1H5.9M", p64: Period{years: decI(3), months: decI(6), weeks: decI(2), days: decI(4), hours: one, minutes: decS("5.9")}},
+		{expected: "P3Y6M2W4DT1H5M7.9S", p64: Period{years: decI(3), months: decI(6), weeks: decI(2), days: decI(4), hours: one, minutes: decI(5), seconds: decS("7.9")}},
+		{expected: "-P3Y6M2W4DT1H5M7.9S", p64: Period{years: decI(3), months: decI(6), weeks: decI(2), days: decI(4), hours: one, minutes: decI(5), seconds: decS("7.9"), neg: true}},
+		{expected: "P-3Y6M-2W4DT-1H5M-7.9S", p64: Period{years: decI(-3), months: decI(6), weeks: decI(-2), days: decI(4), hours: decI(-1), minutes: decI(5), seconds: decS("-7.9")}},
 	}
 
 	for i, c := range cases {
@@ -406,8 +406,8 @@ func Test_Period64_Sign_Abs_etc(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	z := Zero
-	neg := Period64{years: one, months: decI(2), weeks: decI(3), days: decI(4), hours: decI(5), minutes: decI(6), seconds: decI(7), neg: true}
-	pos := Period64{years: one, months: decI(2), weeks: decI(3), days: decI(4), hours: decI(5), minutes: decI(6), seconds: decI(7), neg: false}
+	neg := Period{years: one, months: decI(2), weeks: decI(3), days: decI(4), hours: decI(5), minutes: decI(6), seconds: decI(7), neg: true}
+	pos := Period{years: one, months: decI(2), weeks: decI(3), days: decI(4), hours: decI(5), minutes: decI(6), seconds: decI(7), neg: false}
 
 	g.Expect(z.Negate()).To(Equal(z))
 	g.Expect(pos.Negate()).To(Equal(neg))

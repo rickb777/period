@@ -16,7 +16,7 @@ func TestParseErrors(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	cases := []struct {
-		value    Period
+		value    ISOString
 		expected string
 		expvalue string
 	}{
@@ -71,9 +71,9 @@ func TestParsePeriod(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	cases := []struct {
-		value    Period
-		reversed Period
-		period   Period64
+		value    ISOString
+		reversed ISOString
+		period   Period
 	}{
 		// zero
 		{"P0D", CanonicalZero, Zero},
@@ -93,62 +93,62 @@ func TestParsePeriod(t *testing.T) {
 		{"+PT0S", CanonicalZero, Zero},
 
 		// ones
-		{"P1Y", "P1Y", Period64{years: one}},
-		{"P1M", "P1M", Period64{months: one}},
-		{"P1W", "P1W", Period64{weeks: one}},
-		{"P1D", "P1D", Period64{days: one}},
-		{"PT1H", "PT1H", Period64{hours: one}},
-		{"PT1M", "PT1M", Period64{minutes: one}},
-		{"PT1S", "PT1S", Period64{seconds: one}},
-		{"+PT1S", "PT1S", Period64{seconds: one}},
+		{"P1Y", "P1Y", Period{years: one}},
+		{"P1M", "P1M", Period{months: one}},
+		{"P1W", "P1W", Period{weeks: one}},
+		{"P1D", "P1D", Period{days: one}},
+		{"PT1H", "PT1H", Period{hours: one}},
+		{"PT1M", "PT1M", Period{minutes: one}},
+		{"PT1S", "PT1S", Period{seconds: one}},
+		{"+PT1S", "PT1S", Period{seconds: one}},
 
 		// unusual case: treat this as a double negative
-		{"-P-1Y", "P1Y", Period64{years: one}},
-		{"-P-1M", "P1M", Period64{months: one}},
-		{"-P-1W", "P1W", Period64{weeks: one}},
-		{"-P-1D", "P1D", Period64{days: one}},
-		{"-PT-1H", "PT1H", Period64{hours: one}},
-		{"-PT-1M", "PT1M", Period64{minutes: one}},
-		{"-PT-1S", "PT1S", Period64{seconds: one}},
+		{"-P-1Y", "P1Y", Period{years: one}},
+		{"-P-1M", "P1M", Period{months: one}},
+		{"-P-1W", "P1W", Period{weeks: one}},
+		{"-P-1D", "P1D", Period{days: one}},
+		{"-PT-1H", "PT1H", Period{hours: one}},
+		{"-PT-1M", "PT1M", Period{minutes: one}},
+		{"-PT-1S", "PT1S", Period{seconds: one}},
 
-		{"-P1Y", "-P1Y", Period64{years: one, neg: true}},
-		{"-P1M", "-P1M", Period64{months: one, neg: true}},
-		{"-P1W", "-P1W", Period64{weeks: one, neg: true}},
-		{"-P1D", "-P1D", Period64{days: one, neg: true}},
-		{"-PT1H", "-PT1H", Period64{hours: one, neg: true}},
-		{"-PT1M", "-PT1M", Period64{minutes: one, neg: true}},
-		{"-PT1S", "-PT1S", Period64{seconds: one, neg: true}},
-		{"-PT1S", "-PT1S", Period64{seconds: one, neg: true}},
+		{"-P1Y", "-P1Y", Period{years: one, neg: true}},
+		{"-P1M", "-P1M", Period{months: one, neg: true}},
+		{"-P1W", "-P1W", Period{weeks: one, neg: true}},
+		{"-P1D", "-P1D", Period{days: one, neg: true}},
+		{"-PT1H", "-PT1H", Period{hours: one, neg: true}},
+		{"-PT1M", "-PT1M", Period{minutes: one, neg: true}},
+		{"-PT1S", "-PT1S", Period{seconds: one, neg: true}},
+		{"-PT1S", "-PT1S", Period{seconds: one, neg: true}},
 
-		{"P-1Y", "-P1Y", Period64{years: one, neg: true}},
-		{"P-1M", "-P1M", Period64{months: one, neg: true}},
-		{"P-1W", "-P1W", Period64{weeks: one, neg: true}},
-		{"P-1D", "-P1D", Period64{days: one, neg: true}},
-		{"PT-1H", "-PT1H", Period64{hours: one, neg: true}},
-		{"PT-1M", "-PT1M", Period64{minutes: one, neg: true}},
-		{"PT-1S", "-PT1S", Period64{seconds: one, neg: true}},
-		{"PT-1S", "-PT1S", Period64{seconds: one, neg: true}},
+		{"P-1Y", "-P1Y", Period{years: one, neg: true}},
+		{"P-1M", "-P1M", Period{months: one, neg: true}},
+		{"P-1W", "-P1W", Period{weeks: one, neg: true}},
+		{"P-1D", "-P1D", Period{days: one, neg: true}},
+		{"PT-1H", "-PT1H", Period{hours: one, neg: true}},
+		{"PT-1M", "-PT1M", Period{minutes: one, neg: true}},
+		{"PT-1S", "-PT1S", Period{seconds: one, neg: true}},
+		{"PT-1S", "-PT1S", Period{seconds: one, neg: true}},
 
-		{"P1Y1M1W1DT1H1M1.111111111S", "P1Y1M1W1DT1H1M1.111111111S", Period64{years: one, months: one, weeks: one, days: one, hours: one, minutes: one, seconds: decS("1.111111111")}},
-		//{"-P1Y-1M-1W-1DT-1H-1M-1.111111111S", "P1Y1M1W1DT1H1M1.111111111S", Period64{years: negOne, months: negOne, weeks: negOne, days: negOne, hours: negOne, minutes: negOne, seconds: decS("-1.111111111")}},
-		{"P1Y-1M1W-1DT1H-1M1.111111111S", "P1Y-1M1W-1DT1H-1M1.111111111S", Period64{years: one, months: negOne, weeks: one, days: negOne, hours: one, minutes: negOne, seconds: decS("1.111111111")}},
-		{"-P1Y-1M1W-1DT1H-1M1.111111111S", "-P1Y-1M1W-1DT1H-1M1.111111111S", Period64{years: one, months: negOne, weeks: one, days: negOne, hours: one, minutes: negOne, seconds: decS("1.111111111"), neg: true}},
+		{"P1Y1M1W1DT1H1M1.111111111S", "P1Y1M1W1DT1H1M1.111111111S", Period{years: one, months: one, weeks: one, days: one, hours: one, minutes: one, seconds: decS("1.111111111")}},
+		//{"-P1Y-1M-1W-1DT-1H-1M-1.111111111S", "P1Y1M1W1DT1H1M1.111111111S", Period{years: negOne, months: negOne, weeks: negOne, days: negOne, hours: negOne, minutes: negOne, seconds: decS("-1.111111111")}},
+		{"P1Y-1M1W-1DT1H-1M1.111111111S", "P1Y-1M1W-1DT1H-1M1.111111111S", Period{years: one, months: negOne, weeks: one, days: negOne, hours: one, minutes: negOne, seconds: decS("1.111111111")}},
+		{"-P1Y-1M1W-1DT1H-1M1.111111111S", "-P1Y-1M1W-1DT1H-1M1.111111111S", Period{years: one, months: negOne, weeks: one, days: negOne, hours: one, minutes: negOne, seconds: decS("1.111111111"), neg: true}},
 
-		{"P0.0000000000000000001Y", "P0.0000000000000000001Y", Period64{years: dec(1, 19)}},
-		{"P0.0000000000000000001M", "P0.0000000000000000001M", Period64{months: dec(1, 19)}},
-		{"P0.0000000000000000001W", "P0.0000000000000000001W", Period64{weeks: dec(1, 19)}},
-		{"P0.0000000000000000001D", "P0.0000000000000000001D", Period64{days: dec(1, 19)}},
-		{"PT0.0000000000000000001H", "PT0.0000000000000000001H", Period64{hours: dec(1, 19)}},
-		{"PT0.0000000000000000001M", "PT0.0000000000000000001M", Period64{minutes: dec(1, 19)}},
-		{"PT0.0000000000000000001S", "PT0.0000000000000000001S", Period64{seconds: dec(1, 19)}},
+		{"P0.0000000000000000001Y", "P0.0000000000000000001Y", Period{years: dec(1, 19)}},
+		{"P0.0000000000000000001M", "P0.0000000000000000001M", Period{months: dec(1, 19)}},
+		{"P0.0000000000000000001W", "P0.0000000000000000001W", Period{weeks: dec(1, 19)}},
+		{"P0.0000000000000000001D", "P0.0000000000000000001D", Period{days: dec(1, 19)}},
+		{"PT0.0000000000000000001H", "PT0.0000000000000000001H", Period{hours: dec(1, 19)}},
+		{"PT0.0000000000000000001M", "PT0.0000000000000000001M", Period{minutes: dec(1, 19)}},
+		{"PT0.0000000000000000001S", "PT0.0000000000000000001S", Period{seconds: dec(1, 19)}},
 
-		{"P9223372036854775807Y", "P9223372036854775807Y", Period64{years: decI(math.MaxInt64)}},
-		{"P9223372036854775807M", "P9223372036854775807M", Period64{months: decI(math.MaxInt64)}},
-		{"P9223372036854775807W", "P9223372036854775807W", Period64{weeks: decI(math.MaxInt64)}},
-		{"P9223372036854775807D", "P9223372036854775807D", Period64{days: decI(math.MaxInt64)}},
-		{"PT9223372036854775807H", "PT9223372036854775807H", Period64{hours: decI(math.MaxInt64)}},
-		{"PT9223372036854775807M", "PT9223372036854775807M", Period64{minutes: decI(math.MaxInt64)}},
-		{"PT9223372036854775807S", "PT9223372036854775807S", Period64{seconds: decI(math.MaxInt64)}},
+		{"P9223372036854775807Y", "P9223372036854775807Y", Period{years: decI(math.MaxInt64)}},
+		{"P9223372036854775807M", "P9223372036854775807M", Period{months: decI(math.MaxInt64)}},
+		{"P9223372036854775807W", "P9223372036854775807W", Period{weeks: decI(math.MaxInt64)}},
+		{"P9223372036854775807D", "P9223372036854775807D", Period{days: decI(math.MaxInt64)}},
+		{"PT9223372036854775807H", "PT9223372036854775807H", Period{hours: decI(math.MaxInt64)}},
+		{"PT9223372036854775807M", "PT9223372036854775807M", Period{minutes: decI(math.MaxInt64)}},
+		{"PT9223372036854775807S", "PT9223372036854775807S", Period{seconds: decI(math.MaxInt64)}},
 	}
 
 	for i, c := range cases {

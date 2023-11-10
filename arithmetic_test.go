@@ -14,8 +14,8 @@ func TestPeriodAddSubtract(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	cases := []struct {
-		one, two        Period
-		sum, difference Period
+		one, two        ISOString
+		sum, difference ISOString
 	}{
 		// simple cases
 		{"P0D", "P0D", "P0D", "P0D"},

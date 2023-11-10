@@ -11,7 +11,7 @@ import (
 
 // MustParse is as per Parse except that it panics if the string cannot be parsed.
 // This is intended for setup code; don't use it for user inputs.
-func MustParse[S Period | string](isoPeriod S) Period64 {
+func MustParse[S ISOString | string](isoPeriod S) Period {
 	p, err := Parse(isoPeriod)
 	if err != nil {
 		panic(err)
@@ -26,8 +26,8 @@ func MustParse[S Period | string](isoPeriod S) Period64 {
 // The zero value can be represented in several ways: all of the following
 // are equivalent: "P0Y", "P0M", "P0W", "P0D", "PT0H", PT0M", PT0S", and "P0".
 // The canonical zero is "P0D".
-func Parse[S Period | string](isoPeriod S) (Period64, error) {
-	p := Period64{}
+func Parse[S ISOString | string](isoPeriod S) (Period, error) {
+	p := Period{}
 	err := p.Parse(string(isoPeriod))
 	return p, err
 }
@@ -39,7 +39,7 @@ func Parse[S Period | string](isoPeriod S) (Period64, error) {
 // The zero value can be represented in several ways: all of the following
 // are equivalent: "P0Y", "P0M", "P0W", "P0D", "PT0H", PT0M", PT0S", and "P0".
 // The canonical zero is "P0D".
-func (period *Period64) Parse(isoPeriod string) error {
+func (period *Period) Parse(isoPeriod string) error {
 	if isoPeriod == "" {
 		return fmt.Errorf(`cannot parse a blank string as a period`)
 	}

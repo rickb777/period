@@ -13,10 +13,10 @@
 //
 // The period defined in this API is specified by ISO-8601, but that uses the term 'duration'
 // instead; see https://en.wikipedia.org/wiki/ISO_8601#Durations. In Go, time.Duration and
-// this period.Period follow terminology similar to e.g. Joda Time in that a 'duration' is
+// this period.ISOString follow terminology similar to e.g. Joda Time in that a 'duration' is
 // a definite number of seconds (or fractions of a second).
 //
-// Example period.Period representations:
+// Example period.ISOString representations:
 //
 // * "P2Y" is two years;
 //

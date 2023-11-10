@@ -8,14 +8,14 @@ import "errors"
 
 // Subtract subtracts one period from another.
 // Arithmetic overflow will result in an error.
-func (period Period64) Subtract(other Period64) (Period64, error) {
+func (period Period) Subtract(other Period) (Period, error) {
 	return period.Add(other.Negate())
 }
 
 // Add adds two periods together. Use this method along with Negate in order to subtract periods.
 // Arithmetic overflow will result in an error.
-func (period Period64) Add(other Period64) (Period64, error) {
-	var left, right Period64
+func (period Period) Add(other Period) (Period, error) {
+	var left, right Period
 
 	if period.neg {
 		left = period.flipSign()
@@ -37,7 +37,7 @@ func (period Period64) Add(other Period64) (Period64, error) {
 	minutes, e6 := left.minutes.Add(right.minutes)
 	seconds, e7 := left.seconds.Add(right.seconds)
 
-	result := Period64{years: years, months: months, weeks: weeks, days: days, hours: hours, minutes: minutes, seconds: seconds}.Normalise(true).NormaliseSign()
+	result := Period{years: years, months: months, weeks: weeks, days: days, hours: hours, minutes: minutes, seconds: seconds}.Normalise(true).NormaliseSign()
 	return result, errors.Join(e1, e2, e3, e4, e5, e6, e7)
 }
 
@@ -130,7 +130,7 @@ func (period Period64) Add(other Period64) (Period64, error) {
 
 // moveFractionToRight attempts to remove fractions in higher-order fields by moving their value to the
 // next-lower-order field. For example, fractional years become months.
-//func (period *Period64) moveFractionToRight() *Period64 {
+//func (period *Period) moveFractionToRight() *Period {
 //	// remember that the fields are all fixed-point 1E1
 //
 //	if period.lastField == year && (period.fraction != 0) {
