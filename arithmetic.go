@@ -6,6 +6,7 @@ package period
 
 import (
 	"errors"
+	"github.com/govalues/decimal"
 	"time"
 )
 
@@ -92,57 +93,50 @@ func (period Period) AddTo(t time.Time) (time.Time, bool) {
 //-------------------------------------------------------------------------------------------------
 
 // Scale a period by a multiplication factor. Obviously, this can both enlarge and shrink it,
-// and change the sign if the factor is negative. The result is normalised, but integer overflows
-// are silently ignored.
-//
-// Bear in mind that the internal representation is limited by fixed-point arithmetic with two
-// decimal places; each field is only int16.
-//
-// Known issue: scaling by a large reduction factor (i.e. much less than one) doesn't work properly.
-//func (period Period) Scale(factor float32) Period {
-//	result, _ := period.ScaleWithOverflowCheck(factor)
-//	return result
-//}
+// and change the sign if the factor is negative. The result is not normalised.
+func (period Period) Scale(factor decimal.Decimal) (Period, error) {
+	var years, months, weeks, days, hours, minutes, seconds decimal.Decimal
+	var e1, e2, e3, e4, e5, e6, e7 error
 
-// ScaleWithOverflowCheck scales a period by a multiplication factor. Obviously, this can both
-// enlarge and shrink it, and change the sign if negative. The result is normalised. An error
-// is returned if integer overflow happened.
-//
-// Bear in mind that the internal representation is limited by fixed-point arithmetic with one
-// decimal place; each field is only int16.
-//
-// Known issue: scaling by a large reduction factor (i.e. much less than one) doesn't work properly.
-//func (period Period) ScaleWithOverflowCheck(factor float32) (Period, error) {
-//	ap, neg := period.absNeg()
-//
-//	if -0.5 < factor && factor < 0.5 {
-//		d, pr1 := ap.Duration()
-//		mul := float64(d) * float64(factor)
-//		p2, pr2 := NewOf(time.Duration(mul))
-//		return p2.Normalise(pr1 && pr2), nil
-//	}
-//
-//	y := int64(float32(ap.years) * factor)
-//	m := int64(float32(ap.months) * factor)
-//	w := int64(float32(ap.weeks) * factor)
-//	d := int64(float32(ap.days) * factor)
-//	hh := int64(float32(ap.hours) * factor)
-//	mm := int64(float32(ap.minutes) * factor)
-//	ss := int64(float32(ap.seconds) * factor)
-//
-//	p64 := &period64{years: y, months: m, weeks: w, days: d, hours: hh, minutes: mm, seconds: ss, neg: neg, denormal: true}
-//	n64 := p64.normalise64(true)
-//	return n64.toPeriod(), n64.checkOverflow()
-//}
+	if period.years.Coef() != 0 {
+		years, e1 = period.years.Mul(factor)
+		years = years.Trim(0)
+	}
+	if period.months.Coef() != 0 {
+		months, e2 = period.months.Mul(factor)
+		months = months.Trim(0)
+	}
+	if period.weeks.Coef() != 0 {
+		weeks, e3 = period.weeks.Mul(factor)
+		weeks = weeks.Trim(0)
+	}
+	if period.days.Coef() != 0 {
+		days, e4 = period.days.Mul(factor)
+		days = days.Trim(0)
+	}
+	if period.hours.Coef() != 0 {
+		hours, e5 = period.hours.Mul(factor)
+		hours = hours.Trim(0)
+	}
+	if period.minutes.Coef() != 0 {
+		minutes, e6 = period.minutes.Mul(factor)
+		minutes = minutes.Trim(0)
+	}
+	if period.seconds.Coef() != 0 {
+		seconds, e7 = period.seconds.Mul(factor)
+		seconds = seconds.Trim(0)
+	}
 
-// RationalScale scales a period by a rational multiplication factor. Obviously, this can both enlarge and shrink it,
-// and change the sign if negative. The result is normalised. An error is returned if integer overflow
-// happened.
-//
-// If the divisor is zero, a panic will arise.
-//
-// Bear in mind that the internal representation is limited by fixed-point arithmetic with two
-// decimal places; each field is only int16.
-//func (period Period) RationalScale(multiplier, divisor int) (Period, error) {
-//	return period.rationalScale64(int64(multiplier), int64(divisor))
-//}
+	result := Period{
+		years:   years,
+		months:  months,
+		weeks:   weeks,
+		days:    days,
+		hours:   hours,
+		minutes: minutes,
+		seconds: seconds,
+		neg:     period.neg,
+	}
+
+	return result.normaliseSign(), errors.Join(e1, e2, e3, e4, e5, e6, e7)
+}

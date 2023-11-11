@@ -6,12 +6,14 @@ package period
 
 import (
 	"fmt"
+	"github.com/govalues/decimal"
 	. "github.com/onsi/gomega"
+	"math"
 	"testing"
 	"time"
 )
 
-func TestPeriodAddSubtract(t *testing.T) {
+func Test_Add_Subtract(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	cases := []struct {
@@ -71,7 +73,7 @@ func TestPeriodAddSubtract(t *testing.T) {
 	}
 }
 
-func TestPeriodAddToTime(t *testing.T) {
+func Test_AddTo(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	const millisec = 1000000
@@ -136,5 +138,76 @@ func TestPeriodAddToTime(t *testing.T) {
 				g.Expect(prec).To(Equal(c.precise))
 			})
 		}
+	}
+}
+
+func Test_Scale(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	cases := []struct {
+		input    ISOString
+		factor   decimal.Decimal
+		expected ISOString
+	}{
+		{input: "P0D", factor: decI(2), expected: "P0D"},
+		{input: "P1D", factor: decI(2), expected: "P2D"},
+		{input: "P1D", factor: decI(0), expected: "P0D"},
+		{input: "P1D", factor: decI(365), expected: "P365D"},
+		{input: "P1M", factor: decI(2), expected: "P2M"},
+		{input: "P1M", factor: decI(12), expected: "P12M"},
+		{input: "P1Y", factor: decI(2), expected: "P2Y"},
+		{input: "P1Y", factor: decI(0), expected: "P0Y"},
+		{input: "PT1H", factor: decI(2), expected: "PT2H"},
+		{input: "PT1M", factor: decI(2), expected: "PT2M"},
+		{input: "PT1S", factor: decI(2), expected: "PT2S"},
+		{input: "P1D", factor: dec(5, 1), expected: "P0.5D"},
+		{input: "P1M", factor: dec(5, 1), expected: "P0.5M"},
+		{input: "P1Y", factor: dec(5, 1), expected: "P0.5Y"},
+		{input: "PT1H", factor: dec(5, 1), expected: "PT0.5H"},
+		{input: "PT1H", factor: dec(1, 1), expected: "PT0.1H"},
+		{input: "PT1M", factor: dec(5, 1), expected: "PT0.5M"},
+		{input: "PT1S", factor: dec(5, 1), expected: "PT0.5S"},
+		{input: "PT0.000001S", factor: dec(1, 6), expected: "PT0.000000000001S"},
+		{input: "-PT0.000001S", factor: dec(1, 6), expected: "-PT0.000000000001S"},
+		{input: "PT1H", factor: dec(2777778, 9), expected: "PT0.002777778H"}, // 1 / 3600
+		{input: "PT1M", factor: decI(60), expected: "PT60M"},
+		{input: "PT1S", factor: decI(60), expected: "PT60S"},
+		{input: "PT1S", factor: decI(86400), expected: "PT86400S"},
+		{input: "PT1S", factor: decI(86400000), expected: "PT86400000S"},
+		{input: "P365.2425D", factor: decI(10), expected: "P3652.425D"},
+		{input: "P1Y2M3W4DT5H6M7S", factor: dec(2, 0), expected: "P2Y4M6W8DT10H12M14S"},
+		{input: "P2Y4M6W8DT10H12M14S", factor: dec(-5, 1), expected: "-P1Y2M3W4DT5H6M7S"},
+		{input: "-P2Y4M6W8DT10H12M14S", factor: dec(5, 1), expected: "-P1Y2M3W4DT5H6M7S"},
+		{input: "-P2Y4M6W8DT10H12M14S", factor: dec(-5, 1), expected: "P1Y2M3W4DT5H6M7S"},
+	}
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("%d %s", i, c.input), func(t *testing.T) {
+			s, err := MustParse(c.input).Scale(c.factor)
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(s).To(Equal(MustParse(c.expected)), info(i, "%s * %s -> %s", c.input, c.factor, c.expected))
+		})
+	}
+}
+
+func Test_Scale_errors(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	cases := []struct {
+		input  Period
+		factor decimal.Decimal
+	}{
+		{input: Period{years: dec(math.MaxInt64, 0)}, factor: dec(math.MaxInt64, 0)},
+		{input: Period{months: dec(math.MaxInt64, 0)}, factor: dec(math.MaxInt64, 0)},
+		{input: Period{weeks: dec(math.MaxInt64, 0)}, factor: dec(math.MaxInt64, 0)},
+		{input: Period{days: dec(math.MaxInt64, 0)}, factor: dec(math.MaxInt64, 0)},
+		{input: Period{hours: dec(math.MaxInt64, 0)}, factor: dec(math.MaxInt64, 0)},
+		{input: Period{minutes: dec(math.MaxInt64, 0)}, factor: dec(math.MaxInt64, 0)},
+		{input: Period{seconds: dec(math.MaxInt64, 0)}, factor: dec(math.MaxInt64, 0)},
+	}
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("%d %s", i, c.input), func(t *testing.T) {
+			_, err := c.input.Scale(c.factor)
+			g.Expect(err).To(HaveOccurred())
+		})
 	}
 }
