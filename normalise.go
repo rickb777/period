@@ -19,11 +19,11 @@ var (
 // Because the number of hours per day is imprecise (due to daylight savings etc), and because
 // the number of days per month is variable in the Gregorian calendar, there is a reluctance
 // to transfer time to or from the days element. To give control over this, there are two modes:
-// it operates in either precise or imprecise mode.
+// it operates in either precise or approximate mode.
 //
 //   - Multiples of 60 seconds become minutes - both modes.
 //   - Multiples of 60 minutes become hours - both modes.
-//   - Multiples of 24 hours become days - imprecise mode only
+//   - Multiples of 24 hours become days - approximate mode only
 //   - Multiples of 7 days become weeks - both modes.
 //   - Multiples of 12 months become years - both modes.
 //
@@ -119,11 +119,11 @@ func (period Period) SimplifyWeeksToDays() Period {
 // Because the number of hours per day is imprecise (due to daylight savings etc), and because
 // the number of days per month is variable in the Gregorian calendar, there is a reluctance
 // to transfer time to or from the days element. To give control over this, there are two modes:
-// it operates in either precise or imprecise mode.
+// it operates in either precise or approximate mode.
 //
 //   - Years may become multiples of 12 months if the number of months is non-zero - both modes.
 //   - Weeks may become multiples of 7 days if the number of days is non-zero - both modes.
-//   - Days may become multiples of 24 hours if the number of hours is non-zero - imprecise mode only
+//   - Days may become multiples of 24 hours if the number of hours is non-zero - approximate mode only
 //   - Hours may become multiples of 60 minutes if the number of minutes is non-zero - both modes.
 //   - Minutes may become multiples of 60 seconds if the number of seconds is non-zero - both modes.
 //
@@ -267,11 +267,11 @@ func (period Period) DurationApprox() time.Duration {
 //
 // Note that time.Duration is limited to the range 1 nanosecond to about 292 years maximum.
 func (period Period) Duration() (time.Duration, bool) {
-	sign := time.Duration(period.Sign())
+	sign := time.Duration(period.signI())
 	daysE9, ok1 := totalDaysApproxE9(period)
-	tdE9 := time.Duration(daysE9) * secondsPerDay
-	stE9, ok2 := totalSeconds(period)
-	return sign * (tdE9 + stE9), tdE9 == 0 && ok1 && ok2
+	ymwd := time.Duration(daysE9 * secondsPerDay)
+	hms, ok2 := totalHrMinSec(period)
+	return sign * (ymwd + hms), ymwd == 0 && ok1 && ok2
 }
 
 func totalDaysApproxE9(period Period) (int64, bool) {
@@ -282,7 +282,7 @@ func totalDaysApproxE9(period Period) (int64, bool) {
 	return dd + ww + mm + yy, okd && okw && okm && oky
 }
 
-func totalSeconds(period Period) (time.Duration, bool) {
+func totalHrMinSec(period Period) (time.Duration, bool) {
 	hh, okh := fieldDuration(period.hours, int64(time.Hour))
 	mm, okm := fieldDuration(period.minutes, int64(time.Minute))
 	ss, oks := fieldDuration(period.seconds, int64(time.Second))

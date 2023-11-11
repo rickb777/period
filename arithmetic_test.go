@@ -8,6 +8,7 @@ import (
 	"fmt"
 	. "github.com/onsi/gomega"
 	"testing"
+	"time"
 )
 
 func TestPeriodAddSubtract(t *testing.T) {
@@ -70,68 +71,70 @@ func TestPeriodAddSubtract(t *testing.T) {
 	}
 }
 
-//func expectValid(t *testing.T, period Period32, hint interface{}) Period32 {
-//	t.Helper()
-//	g := NewGomegaWithT(t)
-//	info := fmt.Sprintf("%v: invalid: %#v", hint, period)
-//
-//	// check all the signs are consistent
-//	nPoz := pos(period.years) + pos(period.months) + pos(period.days) + pos(period.hours) + pos(period.minutes) + pos(period.seconds)
-//	nNeg := neg(period.years) + neg(period.months) + neg(period.days) + neg(period.hours) + neg(period.minutes) + neg(period.seconds)
-//	g.Expect(nPoz == 0 || nNeg == 0).To(BeTrue(), info+" inconsistent signs")
-//
-//	if period.lastField == year {
-//		g.Expect(period.months).To(BeZero(), info+" year fraction exists")
-//		g.Expect(period.weeks).To(BeZero(), info+" year fraction exists")
-//		g.Expect(period.days).To(BeZero(), info+" year fraction exists")
-//		g.Expect(period.hours).To(BeZero(), info+" year fraction exists")
-//		g.Expect(period.minutes).To(BeZero(), info+" year fraction exists")
-//		g.Expect(period.seconds).To(BeZero(), info+" year fraction exists")
-//	}
-//
-//	if period.lastField == month {
-//		g.Expect(period.weeks).To(BeZero(), info+" month fraction exists")
-//		g.Expect(period.days).To(BeZero(), info+" month fraction exists")
-//		g.Expect(period.hours).To(BeZero(), info+" month fraction exists")
-//		g.Expect(period.minutes).To(BeZero(), info+" month fraction exists")
-//		g.Expect(period.seconds).To(BeZero(), info+" month fraction exists")
-//	}
-//
-//	if period.lastField == week {
-//		g.Expect(period.days).To(BeZero(), info+" month fraction exists")
-//		g.Expect(period.hours).To(BeZero(), info+" month fraction exists")
-//		g.Expect(period.minutes).To(BeZero(), info+" month fraction exists")
-//		g.Expect(period.seconds).To(BeZero(), info+" month fraction exists")
-//	}
-//
-//	if period.lastField == Day {
-//		g.Expect(period.hours).To(BeZero(), info+" day fraction exists")
-//		g.Expect(period.minutes).To(BeZero(), info+" day fraction exists")
-//		g.Expect(period.seconds).To(BeZero(), info+" day fraction exists")
-//	}
-//
-//	if period.lastField == hour {
-//		g.Expect(period.minutes).To(BeZero(), info+" hour fraction exists")
-//		g.Expect(period.seconds).To(BeZero(), info+" hour fraction exists")
-//	}
-//
-//	if period.lastField == minute {
-//		g.Expect(period.seconds).To(BeZero(), info+" minute fraction exists")
-//	}
-//
-//	return period
-//}
-//
-//func pos(i int32) int {
-//	if i > 0 {
-//		return 1
-//	}
-//	return 0
-//}
-//
-//func neg(i int32) int {
-//	if i < 0 {
-//		return 1
-//	}
-//	return 0
-//}
+func TestPeriodAddToTime(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	const millisec = 1000000
+	const second = 1000 * millisec
+	const minute = 60 * second
+	const hour = 60 * minute
+
+	est := mustLoadLocation("America/New_York")
+
+	times := []time.Time{
+		// A conveniently round number but with non-zero nanoseconds (14 July 2017 @ 2:40am UTC)
+		time.Unix(1500000000, 1).UTC(),
+		// This specific time fails for EST due behaviour of time.Time.AddDate
+		time.Date(2020, 11, 1, 1, 0, 0, 0, est),
+	}
+
+	for _, t0 := range times {
+		cases := []struct {
+			value   string
+			result  time.Time
+			precise bool
+		}{
+			// precise cases
+			{value: "P0D", result: t0, precise: true},
+			{value: "PT1S", result: t0.Add(second), precise: true},
+			{value: "PT0.1S", result: t0.Add(100 * millisec), precise: true},
+			{value: "-PT0.1S", result: t0.Add(-100 * millisec), precise: true},
+			{value: "PT1H-0.1S", result: t0.Add(3599900 * millisec), precise: true},
+			{value: "PT3276S", result: t0.Add(3276 * second), precise: true},
+			{value: "PT1M", result: t0.Add(60 * second), precise: true},
+			{value: "PT0.1M", result: t0.Add(6 * second), precise: true},
+			{value: "PT3276M", result: t0.Add(3276 * minute), precise: true},
+			{value: "PT1H", result: t0.Add(hour), precise: true},
+			{value: "PT0.1H", result: t0.Add(6 * minute), precise: true},
+			{value: "PT3276H", result: t0.Add(3276 * hour), precise: true},
+			{value: "P1D", result: t0.AddDate(0, 0, 1), precise: true},
+			{value: "P3276D", result: t0.AddDate(0, 0, 3276), precise: true},
+			{value: "P1M", result: t0.AddDate(0, 1, 0), precise: true},
+			{value: "P3276M", result: t0.AddDate(0, 3276, 0), precise: true},
+			{value: "P1Y", result: t0.AddDate(1, 0, 0), precise: true},
+			{value: "-P1Y", result: t0.AddDate(-1, 0, 0), precise: true},
+			{value: "P3276Y", result: t0.AddDate(3276, 0, 0), precise: true},   // near the upper limit of range
+			{value: "-P3276Y", result: t0.AddDate(-3276, 0, 0), precise: true}, // near the lower limit of range
+			{value: "P1DT1M", result: t0.AddDate(0, 0, 1).Add(minute), precise: true},
+			{value: "P1DT-1M", result: t0.AddDate(0, 0, 1).Add(-minute), precise: true},
+			{value: "P1MT1M", result: t0.AddDate(0, 1, 0).Add(minute), precise: true},
+			{value: "P1YT-1S", result: t0.AddDate(1, 0, 0).Add(-second), precise: true},
+
+			// approximate cases
+			{value: "P0.1D", result: t0.Add(144 * minute), precise: false},
+			{value: "-P0.1D", result: t0.Add(-144 * minute), precise: false},
+			{value: "P0.1M", result: t0.Add(oneMonthApprox / 10), precise: false},
+			{value: "P0.1Y", result: t0.Add(oneYearApprox / 10), precise: false},
+		}
+		for i, c := range cases {
+			t.Run(fmt.Sprintf("%d %s", i, c.value), func(t *testing.T) {
+				t1, prec := MustParse(c.value).AddTo(t0)
+
+				hint := info(i, "value=%s t0=%s, t1=%s, exp=%s", c.value,
+					t0.Format(time.RFC3339Nano), t1.Format(time.RFC3339Nano), c.result.Format(time.RFC3339Nano))
+				g.Expect(t1.Equal(c.result)).To(BeTrue(), hint)
+				g.Expect(prec).To(Equal(c.precise))
+			})
+		}
+	}
+}

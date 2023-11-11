@@ -115,6 +115,7 @@ func TestNewYMWD(t *testing.T) {
 		g.Expect(pp.WeeksInt()).To(Equal(c.weeks), info(i, c.period))
 		g.Expect(pp.Days()).To(Equal(decimal.MustNew(int64(c.days), 0)), info(i, c.period))
 		g.Expect(pp.DaysInt()).To(Equal(c.days), info(i, c.period))
+		g.Expect(pp.DaysIncWeeks()).To(Equal(decimal.MustNew(int64(7*c.weeks+c.days), 0)), info(i, c.period))
 
 		pn := NewYMWD(-c.years, -c.months, -c.weeks, -c.days)
 		en := c.period.Negate()
@@ -136,8 +137,9 @@ func TestNewDecimal(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	var (
-		largeInt = decI(math.MaxInt32)
 		one      = decI(1)
+		largeInt = decI(math.MaxInt64)
+		smallInt = dec(1, decimal.MaxScale)
 	)
 
 	cases := []struct {
@@ -155,8 +157,14 @@ func TestNewDecimal(t *testing.T) {
 		{period: Period{months: one}, months: one},
 		{period: Period{years: one}, years: one},
 
-		{period: Period{years: largeInt, months: largeInt, weeks: largeInt, days: largeInt, hours: largeInt, minutes: largeInt, seconds: largeInt},
-			years: largeInt, months: largeInt, weeks: largeInt, days: largeInt, hours: largeInt, minutes: largeInt, seconds: largeInt},
+		{
+			period: Period{years: largeInt, months: largeInt, weeks: largeInt, days: largeInt, hours: largeInt, minutes: largeInt, seconds: largeInt},
+			years:  largeInt, months: largeInt, weeks: largeInt, days: largeInt, hours: largeInt, minutes: largeInt, seconds: largeInt,
+		},
+		{
+			period: Period{years: decimal.Zero, months: decimal.Zero, weeks: decimal.Zero, days: decimal.Zero, hours: decimal.Zero, minutes: decimal.Zero, seconds: smallInt},
+			years:  decimal.Zero, months: decimal.Zero, weeks: decimal.Zero, days: decimal.Zero, hours: decimal.Zero, minutes: decimal.Zero, seconds: smallInt,
+		},
 	}
 	for i, c := range cases {
 		pp, err := NewDecimal(c.years, c.months, c.weeks, c.days, c.hours, c.minutes, c.seconds)
@@ -180,8 +188,10 @@ func TestNewDecimal_error(t *testing.T) {
 		years, months, weeks, days decimal.Decimal
 		hours, minutes, seconds    decimal.Decimal
 	}{
-		{period: Period{years: dec(1, 1), months: dec(2, 1), weeks: dec(3, 1), days: dec(4, 1), hours: dec(5, 1), minutes: dec(6, 1), seconds: dec(7, 1)},
-			years: dec(1, 1), months: dec(2, 1), weeks: dec(3, 1), days: dec(4, 1), hours: dec(5, 1), minutes: dec(6, 1), seconds: dec(7, 1)},
+		{
+			period: Period{years: dec(1, 1), months: dec(2, 1), weeks: dec(3, 1), days: dec(4, 1), hours: dec(5, 1), minutes: dec(6, 1), seconds: dec(7, 1)},
+			years:  dec(1, 1), months: dec(2, 1), weeks: dec(3, 1), days: dec(4, 1), hours: dec(5, 1), minutes: dec(6, 1), seconds: dec(7, 1),
+		},
 	}
 	for i, c := range cases {
 		pp, err := NewDecimal(c.years, c.months, c.weeks, c.days, c.hours, c.minutes, c.seconds)
@@ -343,8 +353,16 @@ var (
 )
 
 func init() {
-	london, _ = time.LoadLocation("Europe/London")
-	tokyo, _ = time.LoadLocation("Asia/Tokyo")
+	london = mustLoadLocation("Europe/London")
+	tokyo = mustLoadLocation("Asia/Tokyo")
+}
+
+func mustLoadLocation(name string) *time.Location {
+	loc, err := time.LoadLocation(name)
+	if err != nil {
+		panic(fmt.Sprintf("failed to load %s: %v", name, err))
+	}
+	return loc
 }
 
 func info(i int, m ...interface{}) string {

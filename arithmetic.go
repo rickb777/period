@@ -4,7 +4,10 @@
 
 package period
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 // Subtract subtracts one period from another.
 // Arithmetic overflow will result in an error.
@@ -53,22 +56,38 @@ func (period Period) Add(other Period) (Period, error) {
 //
 // However, when years, months or days contains fractions, the result is only an approximation (it
 // assumes that all days are 24 hours and every year is 365.2425 days, as per Gregorian calendar rules).
-//func (period Period) AddTo(t time.Time) (time.Time, bool) {
-//	wholeYears := (period.years % 10) == 0
-//	wholeMonths := (period.months % 10) == 0
-//	wholeWeeks := (period.weeks % 10) == 0
-//	wholeDays := (period.days % 10) == 0
-//
-//	if wholeYears && wholeMonths && wholeWeeks && wholeDays {
-//		// in this case, time.AddDate provides an exact solution
-//		stE3 := totalSeconds(period)
-//		t1 := t.AddDate(int(period.years/10), int(period.months/10), 7*int(period.weeks/10)+int(period.days/10))
-//		return t1.Add(stE3 * time.Millisecond), true
-//	}
-//
-//	d, precise := period.Duration()
-//	return t.Add(d), precise
-//}
+func (period Period) AddTo(t time.Time) (time.Time, bool) {
+	wholeYears := period.years.Scale() == 0
+	wholeMonths := period.months.Scale() == 0
+	wholeWeeks := period.weeks.Scale() == 0
+	wholeDays := period.days.Scale() == 0
+
+	if wholeYears && wholeMonths && wholeWeeks && wholeDays {
+		// in this case, time.AddDate provides an exact solution
+
+		years, _, ok1 := period.years.Int64(0)
+		months, _, ok2 := period.months.Int64(0)
+		weeks, _, ok3 := period.weeks.Int64(0)
+		days, _, ok4 := period.days.Int64(0)
+
+		hms, ok5 := totalHrMinSec(period)
+
+		if period.neg {
+			years = -years
+			months = -months
+			weeks = -weeks
+			days = -days
+			hms = -hms
+		}
+
+		t1 := t.AddDate(int(years), int(months), int(7*weeks+days)).Add(hms)
+		return t1, ok1 && ok2 && ok3 && ok4 && ok5
+	}
+
+	// fractional years or months or weeks or days
+	d, precise := period.Duration()
+	return t.Add(d), precise
+}
 
 //-------------------------------------------------------------------------------------------------
 
@@ -126,52 +145,4 @@ func (period Period) Add(other Period) (Period, error) {
 // decimal places; each field is only int16.
 //func (period Period) RationalScale(multiplier, divisor int) (Period, error) {
 //	return period.rationalScale64(int64(multiplier), int64(divisor))
-//}
-
-// moveFractionToRight attempts to remove fractions in higher-order fields by moving their value to the
-// next-lower-order field. For example, fractional years become months.
-//func (period *Period) moveFractionToRight() *Period {
-//	// remember that the fields are all fixed-point 1E1
-//
-//	if period.lastField == year && (period.fraction != 0) {
-//		f := int64(period.fraction) * 12
-//		period.lastField = month
-//		period.months = int32(f / 1_000_000_000)
-//		period.fraction = int32(f % 1_000_000_000)
-//	}
-//
-//	//m10 := period.months % 10
-//	//if m10 != 0 && (period.weeks != 0 || period.days != 0 || period.hours != 0 || period.minutes != 0 || period.seconds != 0) {
-//	//	period.weeks += (m10 * weeksPerMonthE6) / oneE6
-//	//	period.months = (period.months / 10) * 10
-//	//}
-//
-//	if period.lastField == week && (period.fraction != 0) {
-//		f := int64(period.fraction) * 7
-//		period.lastField = Day
-//		period.days = int32(f / 1_000_000_000)
-//		period.fraction = int32(f % 1_000_000_000)
-//	}
-//
-//	//d10 := period.days % 10
-//	//if d10 != 0 && (period.hours != 0 || period.minutes != 0 || period.seconds != 0) {
-//	//	period.hours += d10 * 24
-//	//	period.days = (period.days / 10) * 10
-//	//}
-//
-//	if period.lastField == hour && (period.fraction != 0) {
-//		f := int64(period.fraction) * 60
-//		period.lastField = minute
-//		period.minutes = int32(f / 1_000_000_000)
-//		period.fraction = int32(f % 1_000_000_000)
-//	}
-//
-//	if period.lastField == minute && (period.fraction != 0) {
-//		f := int64(period.fraction) * 60
-//		period.lastField = second
-//		period.minutes = int32(f / 1_000_000_000)
-//		period.fraction = int32(f % 1_000_000_000)
-//	}
-//
-//	return period
 //}

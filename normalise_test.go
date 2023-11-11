@@ -92,11 +92,11 @@ func Test_Normalise(t *testing.T) {
 
 			p2 := MustParse(c.input)
 			sp2 := p2.Normalise(false)
-			g.Expect(sp2.Period()).To(Equal(c.imprecise), "imprecise +ve case")
+			g.Expect(sp2.Period()).To(Equal(c.imprecise), "approximate +ve case")
 
 			if !p2.IsZero() {
 				sp2n := p2.Negate().Normalise(false)
-				g.Expect(sp2n.Period()).To(Equal("-"+c.imprecise), "imprecise -ve case")
+				g.Expect(sp2n.Period()).To(Equal("-"+c.imprecise), "approximate -ve case")
 			}
 		})
 	}
@@ -265,11 +265,11 @@ func Test_Simplify(t *testing.T) {
 
 			p2 := MustParse(c.input)
 			sp2 := p2.Simplify(false)
-			g.Expect(sp2.Period()).To(Equal(c.imprecise), "imprecise +ve case")
+			g.Expect(sp2.Period()).To(Equal(c.imprecise), "approximate +ve case")
 
 			if !p2.IsZero() {
 				sp2n := p2.Negate().Simplify(false)
-				g.Expect(sp2n.Period()).To(Equal("-"+c.imprecise), "imprecise -ve case")
+				g.Expect(sp2n.Period()).To(Equal("-"+c.imprecise), "approximate -ve case")
 			}
 		})
 	}
@@ -356,7 +356,7 @@ const oneDay = 24 * time.Hour
 const oneMonthApprox = daysPerMonthE6 * secondsPerDay * time.Microsecond // 30.436875 days
 const oneYearApprox = 31556952 * time.Second                             // 365.2425 days
 
-func TestPeriodToDuration(t *testing.T) {
+func Test_Duration(t *testing.T) {
 	cases := []struct {
 		value    string
 		duration time.Duration

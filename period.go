@@ -11,16 +11,21 @@ import (
 	"time"
 )
 
-// Period holds a period of time as a set of integers, one for each field in the ISO-8601
-// period, and additional information to track any fraction.
+// Period holds a period of time as a set of decimal numbers, one for each field in the ISO-8601
+// period.
 //
-// By conventional, all the fields have the same sign. However, this is not restricted,
+// By conventional, all the fields should have the same sign. However, this is not restricted,
 // so each field after the first non-zero field can be independently positive or negative.
-// Sometimes this makes sense, e.g. "P1DT-1S" is one second less than one day.
+// Sometimes this makes sense, e.g. "P1YT-1S" is one second less than one year.
 //
-// The precision is large: all fields are scaled decimals using int64 internally for calculations, although
-// the method inputs and outputs are int for convenience. Fractions are supported on the least significant
-// non-zero field only.
+// The precision is large: all fields are scaled decimals using int64 internally for calculations.
+// The value of each field can have up to 19 digits (the range of int64), of which up to 19 digits
+// can be a decimal fraction. So the range is much wider than that of time.Duration.
+//
+// For convenience, the method inputs and outputs are int.
+//
+// Fractions are supported on the least significant non-zero field only. It is an error for
+// more-significant fields to have fractional values too.
 //
 // Instances are immutable.
 type Period struct {
@@ -239,6 +244,13 @@ func (period Period) DaysInt() int {
 // Days gets the number of days in the period, including any fraction present.
 func (period Period) Days() decimal.Decimal {
 	return period.applySign(period.days)
+}
+
+// DaysIncWeeksInt gets the number of days in the period, including all the weeks but truncating
+// any fractions present. The result is d + (w * 7), given d days and w weeks.
+func (period Period) DaysIncWeeksInt() int {
+	i, _, _ := period.DaysIncWeeks().Int64(0)
+	return int(i) * period.signI()
 }
 
 // DaysIncWeeks gets the number of days in the period, including all the weeks and including any
