@@ -7,7 +7,6 @@ package period
 import (
 	"fmt"
 	"github.com/govalues/decimal"
-	"strings"
 	"time"
 )
 
@@ -68,6 +67,20 @@ func New(years, months, weeks, days, hours, minutes, seconds int) Period {
 		seconds: decimal.MustNew(int64(seconds), 0)}.normaliseSign()
 }
 
+// MustNewDecimal creates a period from seven decimal values. The fields are trimmed but no normalisation
+// is applied, e.g. 120 seconds will not become 2 minutes. Use the Normalise() method
+// if you need to.
+//
+// Periods only allow the least-significant non-zero field to contain a fraction. If any of the
+// more-significant fields is supplied with a fraction, this function panics.
+func MustNewDecimal(years, months, weeks, days, hours, minutes, seconds decimal.Decimal) Period {
+	p, err := NewDecimal(years, months, weeks, days, hours, minutes, seconds)
+	if err != nil {
+		panic(err)
+	}
+	return p
+}
+
 // NewDecimal creates a period from seven decimal values. The fields are trimmed but no normalisation
 // is applied, e.g. 120 seconds will not become 2 minutes. Use the Normalise() method
 // if you need to.
@@ -76,39 +89,59 @@ func New(years, months, weeks, days, hours, minutes, seconds int) Period {
 // more-significant fields is supplied with a fraction, an error will be returned. This can be safely
 // ignored for non-standard behaviour.
 func NewDecimal(years, months, weeks, days, hours, minutes, seconds decimal.Decimal) (period Period, err error) {
-	ymwd := make([]string, 0, 4)
-	hms := make([]string, 0, 4)
+	ymwd := make([]byte, 0, 4)
+	hms := make([]byte, 0, 4)
+
 	if years.Scale() > 0 {
-		ymwd = append(ymwd, fmt.Sprintf("%sY", years))
-	}
-	if months.Scale() > 0 {
-		ymwd = append(ymwd, fmt.Sprintf("%sM", months))
-	}
-	if weeks.Scale() > 0 {
-		ymwd = append(ymwd, fmt.Sprintf("%sW", weeks))
-	}
-	if days.Scale() > 0 {
-		ymwd = append(ymwd, fmt.Sprintf("%sD", days))
-	}
-	if hours.Scale() > 0 {
-		hms = append(hms, fmt.Sprintf("%sH", hours))
-	}
-	if minutes.Scale() > 0 {
-		hms = append(hms, fmt.Sprintf("%sM", minutes))
-	}
-	if seconds.Scale() > 0 {
-		hms = append(hms, fmt.Sprintf("%sS", seconds))
-	}
-	if len(ymwd)+len(hms) > 1 {
-		sep := ""
-		if len(hms) > 0 {
-			sep = "T"
+		if months.Coef() != 0 || weeks.Coef() != 0 || days.Coef() != 0 || hours.Coef() != 0 || minutes.Coef() != 0 || seconds.Coef() != 0 {
+			ymwd = append(ymwd, 'Y')
 		}
-		err = fmt.Errorf("only the least significant field can have a fraction; found fractions in %s%s%s",
-			strings.Join(ymwd, ""), sep, strings.Join(hms, ""))
 	}
 
-	return Period{
+	if months.Scale() > 0 {
+		if weeks.Coef() != 0 || days.Coef() != 0 || hours.Coef() != 0 || minutes.Coef() != 0 || seconds.Coef() != 0 {
+			ymwd = append(ymwd, 'M')
+		}
+	}
+
+	if weeks.Scale() > 0 {
+		if days.Coef() != 0 || hours.Coef() != 0 || minutes.Coef() != 0 || seconds.Coef() != 0 {
+			ymwd = append(ymwd, 'W')
+		}
+	}
+
+	if days.Scale() > 0 {
+		if hours.Coef() != 0 || minutes.Coef() != 0 || seconds.Coef() != 0 {
+			ymwd = append(ymwd, 'D')
+		}
+	}
+
+	if hours.Scale() > 0 {
+		if minutes.Coef() != 0 || seconds.Coef() != 0 {
+			if len(ymwd) > 0 && len(hms) == 0 {
+				hms = append(hms, '/')
+			}
+			hms = append(hms, 'H')
+		}
+	}
+
+	if minutes.Scale() > 0 {
+		if seconds.Coef() != 0 {
+			if len(ymwd) > 0 && len(hms) == 0 {
+				hms = append(hms, '/')
+			}
+			hms = append(hms, 'M')
+		}
+	}
+
+	if seconds.Scale() > 0 && len(ymwd)+len(hms) > 0 {
+		if len(ymwd) > 0 && len(hms) == 0 {
+			hms = append(hms, '/')
+		}
+		hms = append(hms, 'S')
+	}
+
+	p := Period{
 		years:   years.Trim(0),
 		months:  months.Trim(0),
 		weeks:   weeks.Trim(0),
@@ -116,7 +149,13 @@ func NewDecimal(years, months, weeks, days, hours, minutes, seconds decimal.Deci
 		hours:   hours.Trim(0),
 		minutes: minutes.Trim(0),
 		seconds: seconds.Trim(0),
-	}.normaliseSign(), err
+	}.normaliseSign()
+
+	if len(ymwd)+len(hms) > 0 {
+		err = fmt.Errorf("only the least significant field can have a fraction; found %s%s fractions in %s", string(ymwd), string(hms), p)
+	}
+
+	return p, err
 }
 
 // NewOf converts a time duration to a Period.

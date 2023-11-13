@@ -105,29 +105,31 @@ func TestNewYMWD(t *testing.T) {
 		{period: Period{years: decI(largeInt), months: decI(largeInt), weeks: decI(largeInt), days: decI(largeInt)}, years: largeInt, months: largeInt, weeks: largeInt, days: largeInt},
 	}
 	for i, c := range cases {
-		pp := NewYMWD(c.years, c.months, c.weeks, c.days)
-		g.Expect(pp).To(Equal(c.period), info(i, c.period))
-		g.Expect(pp.Years()).To(Equal(decimal.MustNew(int64(c.years), 0)), info(i, c.period))
-		g.Expect(pp.YearsInt()).To(Equal(c.years), info(i, c.period))
-		g.Expect(pp.Months()).To(Equal(decimal.MustNew(int64(c.months), 0)), info(i, c.period))
-		g.Expect(pp.MonthsInt()).To(Equal(c.months), info(i, c.period))
-		g.Expect(pp.Weeks()).To(Equal(decimal.MustNew(int64(c.weeks), 0)), info(i, c.period))
-		g.Expect(pp.WeeksInt()).To(Equal(c.weeks), info(i, c.period))
-		g.Expect(pp.Days()).To(Equal(decimal.MustNew(int64(c.days), 0)), info(i, c.period))
-		g.Expect(pp.DaysInt()).To(Equal(c.days), info(i, c.period))
-		g.Expect(pp.DaysIncWeeks()).To(Equal(decimal.MustNew(int64(7*c.weeks+c.days), 0)), info(i, c.period))
+		t.Run(fmt.Sprintf("%d %s", i, c.period), func(t *testing.T) {
+			pp := NewYMWD(c.years, c.months, c.weeks, c.days)
+			g.Expect(pp).To(Equal(c.period), info(i, c.period))
+			g.Expect(pp.Years()).To(Equal(decimal.MustNew(int64(c.years), 0)), info(i, c.period))
+			g.Expect(pp.YearsInt()).To(Equal(c.years), info(i, c.period))
+			g.Expect(pp.Months()).To(Equal(decimal.MustNew(int64(c.months), 0)), info(i, c.period))
+			g.Expect(pp.MonthsInt()).To(Equal(c.months), info(i, c.period))
+			g.Expect(pp.Weeks()).To(Equal(decimal.MustNew(int64(c.weeks), 0)), info(i, c.period))
+			g.Expect(pp.WeeksInt()).To(Equal(c.weeks), info(i, c.period))
+			g.Expect(pp.Days()).To(Equal(decimal.MustNew(int64(c.days), 0)), info(i, c.period))
+			g.Expect(pp.DaysInt()).To(Equal(c.days), info(i, c.period))
+			g.Expect(pp.DaysIncWeeks()).To(Equal(decimal.MustNew(int64(7*c.weeks+c.days), 0)), info(i, c.period))
 
-		pn := NewYMWD(-c.years, -c.months, -c.weeks, -c.days)
-		en := c.period.Negate()
-		g.Expect(pn).To(Equal(en), info(i, en))
-		g.Expect(pn.Years()).To(Equal(decimal.MustNew(int64(-c.years), 0)), info(i, en))
-		g.Expect(pn.YearsInt()).To(Equal(-c.years), info(i, en))
-		g.Expect(pn.Months()).To(Equal(decimal.MustNew(int64(-c.months), 0)), info(i, en))
-		g.Expect(pn.MonthsInt()).To(Equal(-c.months), info(i, en))
-		g.Expect(pn.Weeks()).To(Equal(decimal.MustNew(int64(-c.weeks), 0)), info(i, en))
-		g.Expect(pn.WeeksInt()).To(Equal(-c.weeks), info(i, en))
-		g.Expect(pn.Days()).To(Equal(decimal.MustNew(int64(-c.days), 0)), info(i, en))
-		g.Expect(pn.DaysInt()).To(Equal(-c.days), info(i, en))
+			pn := NewYMWD(-c.years, -c.months, -c.weeks, -c.days)
+			en := c.period.Negate()
+			g.Expect(pn).To(Equal(en), info(i, en))
+			g.Expect(pn.Years()).To(Equal(decimal.MustNew(int64(-c.years), 0)), info(i, en))
+			g.Expect(pn.YearsInt()).To(Equal(-c.years), info(i, en))
+			g.Expect(pn.Months()).To(Equal(decimal.MustNew(int64(-c.months), 0)), info(i, en))
+			g.Expect(pn.MonthsInt()).To(Equal(-c.months), info(i, en))
+			g.Expect(pn.Weeks()).To(Equal(decimal.MustNew(int64(-c.weeks), 0)), info(i, en))
+			g.Expect(pn.WeeksInt()).To(Equal(-c.weeks), info(i, en))
+			g.Expect(pn.Days()).To(Equal(decimal.MustNew(int64(-c.days), 0)), info(i, en))
+			g.Expect(pn.DaysInt()).To(Equal(-c.days), info(i, en))
+		})
 	}
 }
 
@@ -167,20 +169,21 @@ func TestNewDecimal(t *testing.T) {
 		},
 	}
 	for i, c := range cases {
-		pp, err := NewDecimal(c.years, c.months, c.weeks, c.days, c.hours, c.minutes, c.seconds)
-		g.Expect(err).NotTo(HaveOccurred())
-		g.Expect(pp).To(Equal(c.period), info(i, c.period))
-		g.Expect(pp.Years()).To(Equal(c.years), info(i, c.period))
-		g.Expect(pp.Months()).To(Equal(c.months), info(i, c.period))
-		g.Expect(pp.Weeks()).To(Equal(c.weeks), info(i, c.period))
-		g.Expect(pp.Days()).To(Equal(c.days), info(i, c.period))
-		g.Expect(pp.Hours()).To(Equal(c.hours), info(i, c.period))
-		g.Expect(pp.Minutes()).To(Equal(c.minutes), info(i, c.period))
-		g.Expect(pp.Seconds()).To(Equal(c.seconds), info(i, c.period))
+		t.Run(fmt.Sprintf("%d %s", i, c.period), func(t *testing.T) {
+			pp := MustNewDecimal(c.years, c.months, c.weeks, c.days, c.hours, c.minutes, c.seconds)
+			g.Expect(pp).To(Equal(c.period), info(i, c.period))
+			g.Expect(pp.Years()).To(Equal(c.years), info(i, c.period))
+			g.Expect(pp.Months()).To(Equal(c.months), info(i, c.period))
+			g.Expect(pp.Weeks()).To(Equal(c.weeks), info(i, c.period))
+			g.Expect(pp.Days()).To(Equal(c.days), info(i, c.period))
+			g.Expect(pp.Hours()).To(Equal(c.hours), info(i, c.period))
+			g.Expect(pp.Minutes()).To(Equal(c.minutes), info(i, c.period))
+			g.Expect(pp.Seconds()).To(Equal(c.seconds), info(i, c.period))
+		})
 	}
 }
 
-func TestNewDecimal_error(t *testing.T) {
+func TestNewDecimal_error1(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	cases := []struct {
@@ -194,17 +197,127 @@ func TestNewDecimal_error(t *testing.T) {
 		},
 	}
 	for i, c := range cases {
-		pp, err := NewDecimal(c.years, c.months, c.weeks, c.days, c.hours, c.minutes, c.seconds)
-		g.Expect(err).To(HaveOccurred())
-		g.Expect(err.Error()).To(ContainSubstring("0.1Y0.2M0.3W0.4DT0.5H0.6M0.7S"))
-		g.Expect(pp).To(Equal(c.period), info(i, c.period))
-		g.Expect(pp.Years()).To(Equal(c.years), info(i, c.period))
-		g.Expect(pp.Months()).To(Equal(c.months), info(i, c.period))
-		g.Expect(pp.Weeks()).To(Equal(c.weeks), info(i, c.period))
-		g.Expect(pp.Days()).To(Equal(c.days), info(i, c.period))
-		g.Expect(pp.Hours()).To(Equal(c.hours), info(i, c.period))
-		g.Expect(pp.Minutes()).To(Equal(c.minutes), info(i, c.period))
-		g.Expect(pp.Seconds()).To(Equal(c.seconds), info(i, c.period))
+		t.Run(fmt.Sprintf("%d %s", i, c.period), func(t *testing.T) {
+			pp, err := NewDecimal(c.years, c.months, c.weeks, c.days, c.hours, c.minutes, c.seconds)
+			g.Expect(err).To(HaveOccurred())
+			g.Expect(err.Error()).To(ContainSubstring("found YMWD/HMS fractions in P0.1Y0.2M0.3W0.4DT0.5H0.6M0.7S"))
+			g.Expect(pp).To(Equal(c.period), info(i, c.period))
+			g.Expect(pp.Years()).To(Equal(c.years), info(i, c.period))
+			g.Expect(pp.Months()).To(Equal(c.months), info(i, c.period))
+			g.Expect(pp.Weeks()).To(Equal(c.weeks), info(i, c.period))
+			g.Expect(pp.Days()).To(Equal(c.days), info(i, c.period))
+			g.Expect(pp.Hours()).To(Equal(c.hours), info(i, c.period))
+			g.Expect(pp.Minutes()).To(Equal(c.minutes), info(i, c.period))
+			g.Expect(pp.Seconds()).To(Equal(c.seconds), info(i, c.period))
+		})
+	}
+}
+
+func TestNewDecimal_error2(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	cases := []struct {
+		years, months, weeks, days decimal.Decimal
+		hours, minutes, seconds    decimal.Decimal
+		message                    string
+	}{
+		// year fraction
+		{
+			years: dec(1, 1), months: decI(2), weeks: decimal.Zero, days: decimal.Zero, hours: decimal.Zero, minutes: decimal.Zero, seconds: decimal.Zero,
+			message: "found Y fractions in P0.1Y2M",
+		},
+		{
+			years: dec(1, 1), months: decimal.Zero, weeks: decI(2), days: decimal.Zero, hours: decimal.Zero, minutes: decimal.Zero, seconds: decimal.Zero,
+			message: "found Y fractions in P0.1Y2W",
+		},
+		{
+			years: dec(1, 1), months: decimal.Zero, weeks: decimal.Zero, days: decI(2), hours: decimal.Zero, minutes: decimal.Zero, seconds: decimal.Zero,
+			message: "found Y fractions in P0.1Y2D",
+		},
+		{
+			years: dec(1, 1), months: decimal.Zero, weeks: decimal.Zero, days: decimal.Zero, hours: decI(2), minutes: decimal.Zero, seconds: decimal.Zero,
+			message: "found Y fractions in P0.1YT2H",
+		},
+		{
+			years: dec(1, 1), months: decimal.Zero, weeks: decimal.Zero, days: decimal.Zero, hours: decimal.Zero, minutes: decI(2), seconds: decimal.Zero,
+			message: "found Y fractions in P0.1YT2M",
+		},
+		{
+			years: dec(1, 1), months: decimal.Zero, weeks: decimal.Zero, days: decimal.Zero, hours: decimal.Zero, minutes: decimal.Zero, seconds: decI(2),
+			message: "found Y fractions in P0.1YT2S",
+		},
+		// month fraction
+		{
+			years: decimal.Zero, months: dec(1, 1), weeks: decI(2), days: decimal.Zero, hours: decimal.Zero, minutes: decimal.Zero, seconds: decimal.Zero,
+			message: "found M fractions in P0.1M2W",
+		},
+		{
+			years: decimal.Zero, months: dec(1, 1), weeks: decimal.Zero, days: decI(2), hours: decimal.Zero, minutes: decimal.Zero, seconds: decimal.Zero,
+			message: "found M fractions in P0.1M2D",
+		},
+		{
+			years: decimal.Zero, months: dec(1, 1), weeks: decimal.Zero, days: decimal.Zero, hours: decI(2), minutes: decimal.Zero, seconds: decimal.Zero,
+			message: "found M fractions in P0.1MT2H",
+		},
+		{
+			years: decimal.Zero, months: dec(1, 1), weeks: decimal.Zero, days: decimal.Zero, hours: decimal.Zero, minutes: decI(2), seconds: decimal.Zero,
+			message: "found M fractions in P0.1MT2M",
+		},
+		{
+			years: decimal.Zero, months: dec(1, 1), weeks: decimal.Zero, days: decimal.Zero, hours: decimal.Zero, minutes: decimal.Zero, seconds: decI(2),
+			message: "found M fractions in P0.1MT2S",
+		},
+		// week fraction
+		{
+			years: decimal.Zero, months: decimal.Zero, weeks: dec(1, 1), days: decI(2), hours: decimal.Zero, minutes: decimal.Zero, seconds: decimal.Zero,
+			message: "found W fractions in P0.1W2D",
+		},
+		{
+			years: decimal.Zero, months: decimal.Zero, weeks: dec(1, 1), days: decimal.Zero, hours: decI(2), minutes: decimal.Zero, seconds: decimal.Zero,
+			message: "found W fractions in P0.1WT2H",
+		},
+		{
+			years: decimal.Zero, months: decimal.Zero, weeks: dec(1, 1), days: decimal.Zero, hours: decimal.Zero, minutes: decI(2), seconds: decimal.Zero,
+			message: "found W fractions in P0.1WT2M",
+		},
+		{
+			years: decimal.Zero, months: decimal.Zero, weeks: dec(1, 1), days: decimal.Zero, hours: decimal.Zero, minutes: decimal.Zero, seconds: decI(2),
+			message: "found W fractions in P0.1WT2S",
+		},
+		// day fraction
+		{
+			years: decimal.Zero, months: decimal.Zero, weeks: decimal.Zero, days: dec(1, 1), hours: decI(2), minutes: decimal.Zero, seconds: decimal.Zero,
+			message: "found D fractions in P0.1DT2H",
+		},
+		{
+			years: decimal.Zero, months: decimal.Zero, weeks: decimal.Zero, days: dec(1, 1), hours: decimal.Zero, minutes: decI(2), seconds: decimal.Zero,
+			message: "found D fractions in P0.1DT2M",
+		},
+		{
+			years: decimal.Zero, months: decimal.Zero, weeks: decimal.Zero, days: dec(1, 1), hours: decimal.Zero, minutes: decimal.Zero, seconds: decI(2),
+			message: "found D fractions in P0.1DT2S",
+		},
+		// hour fraction
+		{
+			years: decimal.Zero, months: decimal.Zero, weeks: decimal.Zero, days: decimal.Zero, hours: dec(1, 1), minutes: decI(2), seconds: decimal.Zero,
+			message: "found H fractions in PT0.1H2M",
+		},
+		{
+			years: decimal.Zero, months: decimal.Zero, weeks: decimal.Zero, days: decimal.Zero, hours: dec(1, 1), minutes: decimal.Zero, seconds: decI(2),
+			message: "found H fractions in PT0.1H2S",
+		},
+		// minute fraction
+		{
+			years: decimal.Zero, months: decimal.Zero, weeks: decimal.Zero, days: decimal.Zero, hours: decimal.Zero, minutes: dec(1, 1), seconds: decI(2),
+			message: "found M fractions in PT0.1M2S",
+		},
+	}
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("%d %s", i, c.message), func(t *testing.T) {
+			_, err := NewDecimal(c.years, c.months, c.weeks, c.days, c.hours, c.minutes, c.seconds)
+			g.Expect(err).To(HaveOccurred())
+			g.Expect(err.Error()).To(ContainSubstring(c.message))
+		})
 	}
 }
 
