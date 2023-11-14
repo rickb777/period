@@ -43,23 +43,23 @@ func (period Period) WriteTo(w io.Writer) (int64, error) {
 
 	_ = aw.WriteByte('P')
 
-	writeField(aw, period.years, year)
-	writeField(aw, period.months, month)
-	writeField(aw, period.weeks, week)
-	writeField(aw, period.days, day)
+	writeField(aw, period.years, Year)
+	writeField(aw, period.months, Month)
+	writeField(aw, period.weeks, Week)
+	writeField(aw, period.days, Day)
 
 	if period.hours.Coef() != 0 || period.minutes.Coef() != 0 || period.seconds.Coef() != 0 {
 		_ = aw.WriteByte('T')
 
-		writeField(aw, period.hours, hour)
-		writeField(aw, period.minutes, minute)
-		writeField(aw, period.seconds, second)
+		writeField(aw, period.hours, Hour)
+		writeField(aw, period.minutes, Minute)
+		writeField(aw, period.seconds, Second)
 	}
 
 	return uwSum(aw)
 }
 
-func writeField(w usefulWriter, field decimal.Decimal, fieldDesignator designator) {
+func writeField(w usefulWriter, field decimal.Decimal, fieldDesignator Designator) {
 	if field.Coef() != 0 {
 		_, _ = w.WriteString(field.String())
 		_ = w.WriteByte(fieldDesignator.Byte())

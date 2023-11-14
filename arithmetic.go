@@ -10,43 +10,6 @@ import (
 	"time"
 )
 
-// Subtract subtracts one period from another.
-// Arithmetic overflow will result in an error.
-func (period Period) Subtract(other Period) (Period, error) {
-	return period.Add(other.Negate())
-}
-
-// Add adds two periods together. Use this method along with Negate in order to subtract periods.
-// Arithmetic overflow will result in an error.
-func (period Period) Add(other Period) (Period, error) {
-	var left, right Period
-
-	if period.neg {
-		left = period.flipSign()
-	} else {
-		left = period
-	}
-
-	if other.neg {
-		right = other.flipSign()
-	} else {
-		right = other
-	}
-
-	years, e1 := left.years.Add(right.years)
-	months, e2 := left.months.Add(right.months)
-	weeks, e3 := left.weeks.Add(right.weeks)
-	days, e4 := left.days.Add(right.days)
-	hours, e5 := left.hours.Add(right.hours)
-	minutes, e6 := left.minutes.Add(right.minutes)
-	seconds, e7 := left.seconds.Add(right.seconds)
-
-	result := Period{years: years, months: months, weeks: weeks, days: days, hours: hours, minutes: minutes, seconds: seconds}.Normalise(true).normaliseSign()
-	return result, errors.Join(e1, e2, e3, e4, e5, e6, e7)
-}
-
-//-------------------------------------------------------------------------------------------------
-
 // AddTo adds the period to a time, returning the result.
 // A flag is also returned that is true when the conversion was precise, and false otherwise.
 //
@@ -92,9 +55,46 @@ func (period Period) AddTo(t time.Time) (time.Time, bool) {
 
 //-------------------------------------------------------------------------------------------------
 
-// Scale a period by a multiplication factor. Obviously, this can both enlarge and shrink it,
+// Add adds two periods together. Use this method along with Negate in order to subtract periods.
+// Arithmetic overflow will result in an error.
+func (period Period) Add(other Period) (Period, error) {
+	var left, right Period
+
+	if period.neg {
+		left = period.flipSign()
+	} else {
+		left = period
+	}
+
+	if other.neg {
+		right = other.flipSign()
+	} else {
+		right = other
+	}
+
+	years, e1 := left.years.Add(right.years)
+	months, e2 := left.months.Add(right.months)
+	weeks, e3 := left.weeks.Add(right.weeks)
+	days, e4 := left.days.Add(right.days)
+	hours, e5 := left.hours.Add(right.hours)
+	minutes, e6 := left.minutes.Add(right.minutes)
+	seconds, e7 := left.seconds.Add(right.seconds)
+
+	result := Period{years: years, months: months, weeks: weeks, days: days, hours: hours, minutes: minutes, seconds: seconds}.Normalise(true).normaliseSign()
+	return result, errors.Join(e1, e2, e3, e4, e5, e6, e7)
+}
+
+// Subtract subtracts one period from another.
+// Arithmetic overflow will result in an error.
+func (period Period) Subtract(other Period) (Period, error) {
+	return period.Add(other.Negate())
+}
+
+//-------------------------------------------------------------------------------------------------
+
+// Mul multiplies a period by a factor. Obviously, this can both enlarge and shrink it,
 // and change the sign if the factor is negative. The result is not normalised.
-func (period Period) Scale(factor decimal.Decimal) (Period, error) {
+func (period Period) Mul(factor decimal.Decimal) (Period, error) {
 	var years, months, weeks, days, hours, minutes, seconds decimal.Decimal
 	var e1, e2, e3, e4, e5, e6, e7 error
 

@@ -9,55 +9,56 @@ import (
 	"strconv"
 )
 
-type designator int8
+// Designator enumerates the seven fields in a Period.
+type Designator int8
 
 const (
-	_ designator = iota
-	second
-	minute
-	hour
-	day
-	week
-	month
-	year
+	_ Designator = iota
+	Second
+	Minute
+	Hour
+	Day
+	Week
+	Month
+	Year
 )
 
-func asDesignator(d byte, isHMS bool) (designator, error) {
+func asDesignator(d byte, isHMS bool) (Designator, error) {
 	switch d {
 	case 'S':
-		return second, nil
+		return Second, nil
 	case 'H':
-		return hour, nil
+		return Hour, nil
 	case 'D':
-		return day, nil
+		return Day, nil
 	case 'W':
-		return week, nil
+		return Week, nil
 	case 'Y':
-		return year, nil
+		return Year, nil
 	case 'M':
 		if isHMS {
-			return minute, nil
+			return Minute, nil
 		}
-		return month, nil
+		return Month, nil
 	}
 	return 0, fmt.Errorf("expected a designator Y, M, W, D, H, or S not '%c'", d)
 }
 
-func (d designator) Byte() byte {
+func (d Designator) Byte() byte {
 	switch d {
-	case second:
+	case Second:
 		return 'S'
-	case minute:
+	case Minute:
 		return 'M'
-	case hour:
+	case Hour:
 		return 'H'
-	case day:
+	case Day:
 		return 'D'
-	case week:
+	case Week:
 		return 'W'
-	case month:
+	case Month:
 		return 'M'
-	case year:
+	case Year:
 		return 'Y'
 	}
 	panic(strconv.Itoa(int(d)))

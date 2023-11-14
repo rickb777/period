@@ -182,7 +182,7 @@ func Test_Scale(t *testing.T) {
 	}
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.input), func(t *testing.T) {
-			s, err := MustParse(c.input).Scale(c.factor)
+			s, err := MustParse(c.input).Mul(c.factor)
 			g.Expect(err).NotTo(HaveOccurred())
 			g.Expect(s).To(Equal(MustParse(c.expected)), info(i, "%s * %s -> %s", c.input, c.factor, c.expected))
 		})
@@ -206,7 +206,7 @@ func Test_Scale_errors(t *testing.T) {
 	}
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.input), func(t *testing.T) {
-			_, err := c.input.Scale(c.factor)
+			_, err := c.input.Mul(c.factor)
 			g.Expect(err).To(HaveOccurred())
 		})
 	}

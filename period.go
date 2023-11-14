@@ -338,99 +338,71 @@ func (period Period) applySign(field decimal.Decimal) decimal.Decimal {
 
 //-------------------------------------------------------------------------------------------------
 
-//// GetInt gets one field as a whole number.
-//func (period Period) GetInt(field Designator) int {
-//	value := period.GetDecimal(field)
-//	i, _, _ := value.Int64(0)
-//	return int(i)
-//}
+// GetInt gets one field as a whole number.
 //
-//// GetDecimal gets one field.
-//func (period Period) GetDecimal(field Designator) decimal.Decimal {
-//	switch field {
-//	case Year:
-//		return period.applySign(period.years)
-//	case Month:
-//		return period.applySign(period.months)
-//	case Week:
-//		return period.applySign(period.weeks)
-//	case Day:
-//		return period.applySign(period.days)
-//	case Hour:
-//		return period.applySign(period.hours)
-//	case Minute:
-//		return period.applySign(period.minutes)
-//	case Second:
-//		return period.applySign(period.seconds)
-//	}
+// A panic arises if the field is unknown.
+func (period Period) GetInt(field Designator) int {
+	value := period.GetField(field)
+	i, _, _ := value.Int64(0)
+	return int(i)
+}
+
+// GetField gets one field.
 //
-//	panic(field)
-//}
+// A panic arises if the field is unknown.
+func (period Period) GetField(field Designator) decimal.Decimal {
+	switch field {
+	case Year:
+		return period.applySign(period.years)
+	case Month:
+		return period.applySign(period.months)
+	case Week:
+		return period.applySign(period.weeks)
+	case Day:
+		return period.applySign(period.days)
+	case Hour:
+		return period.applySign(period.hours)
+	case Minute:
+		return period.applySign(period.minutes)
+	case Second:
+		return period.applySign(period.seconds)
+	}
+
+	panic(field)
+}
+
+//-------------------------------------------------------------------------------------------------
+
+// SetInt sets one field in the period as a whole number.
 //
-//// SetInt sets one field in the period as a whole number.
-//func (period Period) SetInt(value int, field Designator) Period {
-//	switch field {
-//	case Year:
-//		if signOf(period.years.Sign()) != signOf(value) {
-//			period = period.flipSign()
-//		}
-//		period.years = decimal.MustNew(int64(value), 0)
+// A panic arises if the field is unknown.
+func (period Period) SetInt(value int, field Designator) Period {
+	d := decimal.MustNew(int64(value), 0)
+	p, _ := period.SetField(d, field)
+	return p
+}
+
+// SetField sets one field in the period. Like NewDecimal, an error arises if the new period
+// would have multiple fields with fractions.
 //
-//	case Month:
-//		if period.years.Coef() == 0 {
-//			if signOf(period.months.Sign()) != signOf(value) {
-//				period = period.flipSign()
-//			}
-//		}
-//		period.months = decimal.MustNew(int64(value), 0)
-//
-//	case Week:
-//		if period.years.Coef() == 0 && period.months.Coef() == 0 {
-//			if signOf(period.weeks.Sign()) != signOf(value) {
-//				period = period.flipSign()
-//			}
-//		}
-//		period.weeks = decimal.MustNew(int64(value), 0)
-//
-//	case Day:
-//		if period.years.Coef() == 0 && period.months.Coef() == 0 && period.weeks.Coef() == 0 {
-//			if signOf(period.days.Sign()) != signOf(value) {
-//				period = period.flipSign()
-//			}
-//		}
-//		period.days = decimal.MustNew(int64(value), 0)
-//
-//	case Hour:
-//		if period.years.Coef() == 0 && period.months.Coef() == 0 && period.weeks.Coef() == 0 && period.days.Coef() == 0 {
-//			if signOf(period.hours.Sign()) != signOf(value) {
-//				period = period.flipSign()
-//			}
-//		}
-//		period.hours = decimal.MustNew(int64(value), 0)
-//
-//	case Minute:
-//		if period.years.Coef() == 0 && period.months.Coef() == 0 && period.weeks.Coef() == 0 && period.days.Coef() == 0 && period.hours.Coef() == 0 {
-//			if signOf(period.minutes.Sign()) != signOf(value) {
-//				period = period.flipSign()
-//			}
-//		}
-//		period.minutes = decimal.MustNew(int64(value), 0)
-//
-//	case Second:
-//		if period.years.Coef() == 0 && period.months.Coef() == 0 && period.weeks.Coef() == 0 && period.days.Coef() == 0 && period.hours.Coef() == 0 && period.minutes.Coef() == 0 {
-//			if signOf(period.seconds.Sign()) != signOf(value) {
-//				period = period.flipSign()
-//			}
-//		}
-//		period.seconds = decimal.MustNew(int64(value), 0)
-//	}
-//
-//	return period
-//}
-//
-//func signOf(i int) int {
-//	if i < 0 {
-//		return -1
-//	}
-//	return 1
-//}
+// A panic arises if the field is unknown.
+func (period Period) SetField(value decimal.Decimal, field Designator) (Period, error) {
+	switch field {
+	case Year:
+		return NewDecimal(value, period.months, period.weeks, period.days, period.hours, period.minutes, period.seconds)
+	case Month:
+		return NewDecimal(period.years, value, period.weeks, period.days, period.hours, period.minutes, period.seconds)
+	case Week:
+		return NewDecimal(period.years, period.months, value, period.days, period.hours, period.minutes, period.seconds)
+	case Day:
+		return NewDecimal(period.years, period.months, period.weeks, value, period.hours, period.minutes, period.seconds)
+	case Hour:
+		return NewDecimal(period.years, period.months, period.weeks, period.days, value, period.minutes, period.seconds)
+	case Minute:
+		return NewDecimal(period.years, period.months, period.weeks, period.days, period.hours, value, period.seconds)
+	case Second:
+		return NewDecimal(period.years, period.months, period.weeks, period.days, period.hours, period.minutes, value)
+	}
+
+	panic(field)
+}

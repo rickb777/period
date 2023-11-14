@@ -168,6 +168,73 @@ func TestNewYMWD(t *testing.T) {
 
 //-------------------------------------------------------------------------------------------------
 
+func TestSetGet(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	var (
+		one   = decI(1)
+		two   = decI(2)
+		three = decI(3)
+		four  = decI(4)
+		five  = decI(5)
+		six   = decI(6)
+		seven = decI(7)
+		ten   = decI(10)
+	)
+
+	p0 := New(1, 2, 3, 4, 5, 6, 7)
+
+	cases := []struct {
+		field                      Designator
+		years, months, weeks, days decimal.Decimal
+		hours, minutes, seconds    decimal.Decimal
+	}{
+		{field: Year, years: ten, months: two, weeks: three, days: four, hours: five, minutes: six, seconds: seven},
+		{field: Month, years: one, months: ten, weeks: three, days: four, hours: five, minutes: six, seconds: seven},
+		{field: Week, years: one, months: two, weeks: ten, days: four, hours: five, minutes: six, seconds: seven},
+		{field: Day, years: one, months: two, weeks: three, days: ten, hours: five, minutes: six, seconds: seven},
+		{field: Hour, years: one, months: two, weeks: three, days: four, hours: ten, minutes: six, seconds: seven},
+		{field: Minute, years: one, months: two, weeks: three, days: four, hours: five, minutes: ten, seconds: seven},
+		{field: Second, years: one, months: two, weeks: three, days: four, hours: five, minutes: six, seconds: ten},
+	}
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("%d %v", i, c.field.Byte()), func(t *testing.T) {
+			p1, err := p0.SetField(ten, c.field)
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(p1.Years()).To(Equal(c.years))
+			g.Expect(p1.Months()).To(Equal(c.months))
+			g.Expect(p1.Weeks()).To(Equal(c.weeks))
+			g.Expect(p1.Days()).To(Equal(c.days))
+			g.Expect(p1.Hours()).To(Equal(c.hours))
+			g.Expect(p1.Minutes()).To(Equal(c.minutes))
+			g.Expect(p1.Seconds()).To(Equal(c.seconds))
+
+			p2 := p0.SetInt(10, c.field)
+			g.Expect(p2.YearsInt()).To(BeEquivalentTo(c.years.Coef()))
+			g.Expect(p2.MonthsInt()).To(BeEquivalentTo(c.months.Coef()))
+			g.Expect(p2.WeeksInt()).To(BeEquivalentTo(c.weeks.Coef()))
+			g.Expect(p2.DaysInt()).To(BeEquivalentTo(c.days.Coef()))
+			g.Expect(p2.HoursInt()).To(BeEquivalentTo(c.hours.Coef()))
+			g.Expect(p2.MinutesInt()).To(BeEquivalentTo(c.minutes.Coef()))
+			g.Expect(p2.SecondsInt()).To(BeEquivalentTo(c.seconds.Coef()))
+
+			d0 := p0.GetField(c.field)
+			g.Expect(d0).NotTo(Equal(ten))
+
+			d1 := p1.GetField(c.field)
+			g.Expect(d1).To(Equal(ten))
+
+			v0 := p0.GetInt(c.field)
+			g.Expect(v0).NotTo(Equal(10))
+
+			v2 := p2.GetInt(c.field)
+			g.Expect(v2).To(Equal(10))
+		})
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
 func TestNewDecimal(t *testing.T) {
 	g := NewGomegaWithT(t)
 

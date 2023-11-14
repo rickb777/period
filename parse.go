@@ -70,7 +70,7 @@ func (period *Period) Parse(isoPeriod string) error {
 	var haveFraction bool
 	var number decimal.Decimal
 	var years, months, weeks, days, hours, minutes, seconds itemState
-	var des, previous designator
+	var des, previous Designator
 	var err error
 	nComponents := 0
 
@@ -100,20 +100,20 @@ func (period *Period) Parse(isoPeriod string) error {
 			}
 
 			switch des {
-			case year:
-				years, err = years.testAndSet(number, year, &p.years, isoPeriod)
-			case month:
-				months, err = months.testAndSet(number, month, &p.months, isoPeriod)
-			case week:
-				weeks, err = weeks.testAndSet(number, week, &p.weeks, isoPeriod)
-			case day:
-				days, err = days.testAndSet(number, day, &p.days, isoPeriod)
-			case hour:
-				hours, err = hours.testAndSet(number, hour, &p.hours, isoPeriod)
-			case minute:
-				minutes, err = minutes.testAndSet(number, minute, &p.minutes, isoPeriod)
-			case second:
-				seconds, err = seconds.testAndSet(number, second, &p.seconds, isoPeriod)
+			case Year:
+				years, err = years.testAndSet(number, Year, &p.years, isoPeriod)
+			case Month:
+				months, err = months.testAndSet(number, Month, &p.months, isoPeriod)
+			case Week:
+				weeks, err = weeks.testAndSet(number, Week, &p.weeks, isoPeriod)
+			case Day:
+				days, err = days.testAndSet(number, Day, &p.days, isoPeriod)
+			case Hour:
+				hours, err = hours.testAndSet(number, Hour, &p.hours, isoPeriod)
+			case Minute:
+				minutes, err = minutes.testAndSet(number, Minute, &p.minutes, isoPeriod)
+			case Second:
+				seconds, err = seconds.testAndSet(number, Second, &p.seconds, isoPeriod)
 			default:
 				panic(fmt.Errorf("unreachable %s: '%c'", isoPeriod, des.Byte()))
 			}
@@ -148,7 +148,7 @@ const (
 	set
 )
 
-func (i itemState) testAndSet(number decimal.Decimal, des designator, result *decimal.Decimal, original string) (itemState, error) {
+func (i itemState) testAndSet(number decimal.Decimal, des Designator, result *decimal.Decimal, original string) (itemState, error) {
 	switch i {
 	case unready:
 		return i, fmt.Errorf("%s: '%c' designator cannot occur here", original, des.Byte())
@@ -162,7 +162,7 @@ func (i itemState) testAndSet(number decimal.Decimal, des designator, result *de
 
 //-------------------------------------------------------------------------------------------------
 
-func parseNextField(str, original string, isHMS bool) (decimal.Decimal, designator, string, error) {
+func parseNextField(str, original string, isHMS bool) (decimal.Decimal, Designator, string, error) {
 	number, i := scanDigits(str)
 	switch i {
 	case noNumberFound:
