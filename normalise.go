@@ -101,7 +101,9 @@ func moveWholePartsLeft(larger, smaller, nd decimal.Decimal) (decimal.Decimal, d
 	return l2, r
 }
 
-// SimplifyWeeksToDays adds 7 * the weeks value to the days value, and sets the weeks value to zero.
+//-------------------------------------------------------------------------------------------------
+
+// SimplifyWeeksToDays adds 7 * the weeks field to the days field, and sets the weeks field to zero.
 func (period Period) SimplifyWeeksToDays() Period {
 	wdays, _ := period.weeks.Mul(seven)
 	days, _ := wdays.Add(period.days)
@@ -112,7 +114,7 @@ func (period Period) SimplifyWeeksToDays() Period {
 
 // Simplify simplifies the fields by propagating large values towards the less significant fields.
 // This is akin to converting mixed fractions to improper fractions, across the group of fields.
-// However, existing values are not altered if they are a simple way of expression their period already.
+// However, existing fields are not altered if they are a simple way of expressing their period already.
 //
 // For example, "P2Y1M" simplifies to "P25M" but "P2Y" remains "P2Y".
 //
@@ -267,7 +269,10 @@ func (period Period) DurationApprox() time.Duration {
 //
 // Note that time.Duration is limited to the range 1 nanosecond to about 292 years maximum.
 func (period Period) Duration() (time.Duration, bool) {
-	sign := time.Duration(period.signI())
+	sign := time.Duration(period.Sign())
+	if sign == 0 {
+		return 0, true
+	}
 	daysE9, ok1 := totalDaysApproxE9(period)
 	ymwd := time.Duration(daysE9 * secondsPerDay)
 	hms, ok2 := totalHrMinSec(period)
@@ -306,10 +311,6 @@ const (
 
 	daysPerYearE6  = 365242500          // 365.2425 days by the Gregorian rule
 	daysPerMonthE6 = daysPerYearE6 / 12 // 30.436875 days per month
-
-	// gregorianYearExtraSeconds is the extra seconds needed to convert years to days, there
-	// being 365.2425 days per year by the Gregorian rule.
-	gregorianYearExtraSeconds = 20952 // 0.2425 * 86,400 seconds
 
 	oneE3 int64 = 1000
 	oneE9 int64 = 1_000_000_000 // used for fractions because 0 < fraction <= 999_999_999

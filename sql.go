@@ -29,7 +29,7 @@ func (period *Period) Scan(value interface{}) (err error) {
 	return err
 }
 
-// Value converts the period to a string. It implements driver.Valuer,
+// Value converts the period to an ISO-8601 string. It implements driver.Valuer,
 // https://golang.org/pkg/database/sql/driver/#Valuer
 func (period Period) Value() (driver.Value, error) {
 	return period.String(), nil

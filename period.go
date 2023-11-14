@@ -19,9 +19,10 @@ import (
 //
 // The precision is large: all fields are scaled decimals using int64 internally for calculations.
 // The value of each field can have up to 19 digits (the range of int64), of which up to 19 digits
-// can be a decimal fraction. So the range is much wider than that of time.Duration.
+// can be a decimal fraction. So the range is much wider than that of time.Duration; be aware that
+// periods more than 292 years or less than one nanosecond are outside the convertible range.
 //
-// For convenience, the method inputs and outputs are int.
+// For convenience, the method inputs and outputs use int.
 //
 // Fractions are supported on the least significant non-zero field only. It is an error for
 // more-significant fields to have fractional values too.
@@ -39,23 +40,28 @@ var Zero = Period{}
 
 //-------------------------------------------------------------------------------------------------
 
+// NewYMD creates a simple period without any fractional parts. The fields are initialised verbatim
+// without any normalisation; e.g. 12 months will not become 1 year. Use Normalise if you need to.
+//
+// This function is equivalent to NewYMWD(years, months, 0, days)
+func NewYMD(years, months, days int) Period {
+	return NewYMWD(years, months, 0, days)
+}
+
 // NewYMWD creates a simple period without any fractional parts. The fields are initialised verbatim
-// without any normalisation; e.g. 12 months will not become 1 year. Use the Normalise method if you
-// need to.
+// without any normalisation; e.g. 12 months will not become 1 year. Use Normalise if you need to.
 func NewYMWD(years, months, weeks, days int) Period {
 	return New(years, months, weeks, days, 0, 0, 0)
 }
 
 // NewHMS creates a simple period without any fractional parts. The fields are initialised verbatim
-// without any normalisation; e.g. 120 seconds will not become 2 minutes. Use the Normalise method
-// if you need to.
+// without any normalisation; e.g. 120 seconds will not become 2 minutes. Use Normalise if you need to.
 func NewHMS(hours, minutes, seconds int) Period {
 	return New(0, 0, 0, 0, hours, minutes, seconds)
 }
 
 // New creates a simple period without any fractional parts. The fields are initialised verbatim
-// without any normalisation; e.g. 120 seconds will not become 2 minutes. Use the Normalise() method
-// if you need to.
+// without any normalisation; e.g. 120 seconds will not become 2 minutes. Use Normalise if you need to.
 func New(years, months, weeks, days, hours, minutes, seconds int) Period {
 	return Period{
 		years:   decimal.MustNew(int64(years), 0),
@@ -68,8 +74,7 @@ func New(years, months, weeks, days, hours, minutes, seconds int) Period {
 }
 
 // MustNewDecimal creates a period from seven decimal values. The fields are trimmed but no normalisation
-// is applied, e.g. 120 seconds will not become 2 minutes. Use the Normalise() method
-// if you need to.
+// is applied, e.g. 120 seconds will not become 2 minutes. Use Normalise if you need to.
 //
 // Periods only allow the least-significant non-zero field to contain a fraction. If any of the
 // more-significant fields is supplied with a fraction, this function panics.
@@ -82,8 +87,7 @@ func MustNewDecimal(years, months, weeks, days, hours, minutes, seconds decimal.
 }
 
 // NewDecimal creates a period from seven decimal values. The fields are trimmed but no normalisation
-// is applied, e.g. 120 seconds will not become 2 minutes. Use the Normalise() method
-// if you need to.
+// is applied, e.g. 120 seconds will not become 2 minutes. Use Normalise if you need to.
 //
 // Periods only allow the least-significant non-zero field to contain a fraction. If any of the
 // more-significant fields is supplied with a fraction, an error will be returned. This can be safely
@@ -159,7 +163,7 @@ func NewDecimal(years, months, weeks, days, hours, minutes, seconds decimal.Deci
 }
 
 // NewOf converts a time duration to a Period.
-// The result just a number of seconds, possibly including a fraction. It is not normalised; see Normalise().
+// The result just a number of seconds, possibly including a fraction. It is not normalised; see Normalise.
 func NewOf(duration time.Duration) Period {
 	seconds := decimal.MustNew(int64(duration), 9).Trim(0)
 	return Period{seconds: seconds}.normaliseSign()
@@ -172,7 +176,7 @@ func NewOf(duration time.Duration) Period {
 //
 // If t2 is before t1, the result is a negative period.
 //
-// The result just a number of seconds, possibly including a fraction. It is not normalised; see Normalise().
+// The result just a number of seconds, possibly including a fraction. It is not normalised; see Normalise.
 //
 // Remember that the resultant period does not retain any knowledge of the calendar, so any subsequent
 // computations applied to the period can only be precise if they concern either the date (year, month,
@@ -191,15 +195,6 @@ func Between(t1, t2 time.Time) Period {
 func (period Period) IsZero() bool {
 	period.neg = false
 	return period == Zero
-}
-
-// sign returns 1 if the period is zero or positive, -1 if it is negative.
-func (period Period) signI() int {
-	if period.neg {
-		return -1
-	} else {
-		return 1
-	}
 }
 
 // Sign returns 1 if the period is positive, -1 if it is negative, or zero otherwise.
@@ -243,8 +238,8 @@ func (period Period) Negate() Period {
 
 // YearsInt gets the whole number of years in the period.
 func (period Period) YearsInt() int {
-	i, _, _ := period.years.Int64(0)
-	return int(i) * period.signI()
+	i, _, _ := period.Years().Int64(0)
+	return int(i)
 }
 
 // Years gets the number of years in the period, including any fraction present.
@@ -254,8 +249,8 @@ func (period Period) Years() decimal.Decimal {
 
 // MonthsInt gets the whole number of months in the period.
 func (period Period) MonthsInt() int {
-	i, _, _ := period.months.Int64(0)
-	return int(i) * period.signI()
+	i, _, _ := period.Months().Int64(0)
+	return int(i)
 }
 
 // Months gets the number of months in the period, including any fraction present.
@@ -265,8 +260,8 @@ func (period Period) Months() decimal.Decimal {
 
 // WeeksInt gets the whole number of weeks in the period.
 func (period Period) WeeksInt() int {
-	i, _, _ := period.weeks.Int64(0)
-	return int(i) * period.signI()
+	i, _, _ := period.Weeks().Int64(0)
+	return int(i)
 }
 
 // Weeks gets the number of weeks in the period, including any fraction present.
@@ -276,8 +271,8 @@ func (period Period) Weeks() decimal.Decimal {
 
 // DaysInt gets the whole number of days in the period.
 func (period Period) DaysInt() int {
-	i, _, _ := period.days.Int64(0)
-	return int(i) * period.signI()
+	i, _, _ := period.Days().Int64(0)
+	return int(i)
 }
 
 // Days gets the number of days in the period, including any fraction present.
@@ -285,11 +280,11 @@ func (period Period) Days() decimal.Decimal {
 	return period.applySign(period.days)
 }
 
-// DaysIncWeeksInt gets the number of days in the period, including all the weeks but truncating
-// any fractions present. The result is d + (w * 7), given d days and w weeks.
+// DaysIncWeeksInt gets the whole number of days in the period.
+// The result is d + (w * 7), given d days and w weeks.
 func (period Period) DaysIncWeeksInt() int {
 	i, _, _ := period.DaysIncWeeks().Int64(0)
-	return int(i) * period.signI()
+	return int(i)
 }
 
 // DaysIncWeeks gets the number of days in the period, including all the weeks and including any
@@ -302,8 +297,8 @@ func (period Period) DaysIncWeeks() decimal.Decimal {
 
 // HoursInt gets the whole number of hours in the period.
 func (period Period) HoursInt() int {
-	i, _, _ := period.hours.Int64(0)
-	return int(i) * period.signI()
+	i, _, _ := period.Hours().Int64(0)
+	return int(i)
 }
 
 // Hours gets the number of hours in the period, including any fraction present.
@@ -313,8 +308,8 @@ func (period Period) Hours() decimal.Decimal {
 
 // MinutesInt gets the whole number of minutes in the period.
 func (period Period) MinutesInt() int {
-	i, _, _ := period.minutes.Int64(0)
-	return int(i) * period.signI()
+	i, _, _ := period.Minutes().Int64(0)
+	return int(i)
 }
 
 // Minutes gets the number of minutes in the period, including any fraction present.
@@ -324,8 +319,8 @@ func (period Period) Minutes() decimal.Decimal {
 
 // SecondsInt gets the whole number of seconds in the period.
 func (period Period) SecondsInt() int {
-	i, _, _ := period.seconds.Int64(0)
-	return int(i) * period.signI()
+	i, _, _ := period.Seconds().Int64(0)
+	return int(i)
 }
 
 // Seconds gets the number of seconds in the period, including any fraction present.
@@ -340,3 +335,102 @@ func (period Period) applySign(field decimal.Decimal) decimal.Decimal {
 	}
 	return field
 }
+
+//-------------------------------------------------------------------------------------------------
+
+//// GetInt gets one field as a whole number.
+//func (period Period) GetInt(field Designator) int {
+//	value := period.GetDecimal(field)
+//	i, _, _ := value.Int64(0)
+//	return int(i)
+//}
+//
+//// GetDecimal gets one field.
+//func (period Period) GetDecimal(field Designator) decimal.Decimal {
+//	switch field {
+//	case Year:
+//		return period.applySign(period.years)
+//	case Month:
+//		return period.applySign(period.months)
+//	case Week:
+//		return period.applySign(period.weeks)
+//	case Day:
+//		return period.applySign(period.days)
+//	case Hour:
+//		return period.applySign(period.hours)
+//	case Minute:
+//		return period.applySign(period.minutes)
+//	case Second:
+//		return period.applySign(period.seconds)
+//	}
+//
+//	panic(field)
+//}
+//
+//// SetInt sets one field in the period as a whole number.
+//func (period Period) SetInt(value int, field Designator) Period {
+//	switch field {
+//	case Year:
+//		if signOf(period.years.Sign()) != signOf(value) {
+//			period = period.flipSign()
+//		}
+//		period.years = decimal.MustNew(int64(value), 0)
+//
+//	case Month:
+//		if period.years.Coef() == 0 {
+//			if signOf(period.months.Sign()) != signOf(value) {
+//				period = period.flipSign()
+//			}
+//		}
+//		period.months = decimal.MustNew(int64(value), 0)
+//
+//	case Week:
+//		if period.years.Coef() == 0 && period.months.Coef() == 0 {
+//			if signOf(period.weeks.Sign()) != signOf(value) {
+//				period = period.flipSign()
+//			}
+//		}
+//		period.weeks = decimal.MustNew(int64(value), 0)
+//
+//	case Day:
+//		if period.years.Coef() == 0 && period.months.Coef() == 0 && period.weeks.Coef() == 0 {
+//			if signOf(period.days.Sign()) != signOf(value) {
+//				period = period.flipSign()
+//			}
+//		}
+//		period.days = decimal.MustNew(int64(value), 0)
+//
+//	case Hour:
+//		if period.years.Coef() == 0 && period.months.Coef() == 0 && period.weeks.Coef() == 0 && period.days.Coef() == 0 {
+//			if signOf(period.hours.Sign()) != signOf(value) {
+//				period = period.flipSign()
+//			}
+//		}
+//		period.hours = decimal.MustNew(int64(value), 0)
+//
+//	case Minute:
+//		if period.years.Coef() == 0 && period.months.Coef() == 0 && period.weeks.Coef() == 0 && period.days.Coef() == 0 && period.hours.Coef() == 0 {
+//			if signOf(period.minutes.Sign()) != signOf(value) {
+//				period = period.flipSign()
+//			}
+//		}
+//		period.minutes = decimal.MustNew(int64(value), 0)
+//
+//	case Second:
+//		if period.years.Coef() == 0 && period.months.Coef() == 0 && period.weeks.Coef() == 0 && period.days.Coef() == 0 && period.hours.Coef() == 0 && period.minutes.Coef() == 0 {
+//			if signOf(period.seconds.Sign()) != signOf(value) {
+//				period = period.flipSign()
+//			}
+//		}
+//		period.seconds = decimal.MustNew(int64(value), 0)
+//	}
+//
+//	return period
+//}
+//
+//func signOf(i int) int {
+//	if i < 0 {
+//		return -1
+//	}
+//	return 1
+//}

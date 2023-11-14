@@ -68,10 +68,10 @@ func writeField(w usefulWriter, field decimal.Decimal, fieldDesignator designato
 
 //-------------------------------------------------------------------------------------------------
 
-// Format converts the period to human-readable form using the English localisation.
+// Format converts the period to human-readable form using DefaultFormatLocalisation.
 // To adjust the result, see the Normalise, NormaliseDaysToYears, Simplify and SimplifyWeeksToDays methods.
 func (period Period) Format() string {
-	return period.FormatLocalised(EnglishFormatLocalisation)
+	return period.FormatLocalised(DefaultFormatLocalisation)
 }
 
 // FormatLocalised converts the period to human-readable form in a localisable way.
@@ -123,8 +123,8 @@ type FormatLocalisation struct {
 	HourNames, MinuteNames, SecondNames        plural.Plurals
 }
 
-// EnglishFormatLocalisation provides the formatting strings needed to format Period values in vernacular English.
-var EnglishFormatLocalisation = FormatLocalisation{
+// DefaultFormatLocalisation provides the formatting strings needed to format Period values in vernacular English.
+var DefaultFormatLocalisation = FormatLocalisation{
 	ZeroValue: "zero",
 	Negate:    func(s string) string { return "minus " + s },
 

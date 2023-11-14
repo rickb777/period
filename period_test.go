@@ -83,6 +83,36 @@ func TestNewHMS(t *testing.T) {
 
 //-------------------------------------------------------------------------------------------------
 
+func TestNewYMD(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	const largeInt = math.MaxInt32
+
+	cases := []struct {
+		period              Period
+		years, months, days int
+	}{
+		{}, // zero case
+
+		{period: Period{days: decI(1)}, days: 1},
+		{period: Period{months: decI(1)}, months: 1},
+		{period: Period{years: decI(1)}, years: 1},
+	}
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("%d %s", i, c.period), func(t *testing.T) {
+			pp := NewYMD(c.years, c.months, c.days)
+			g.Expect(pp).To(Equal(c.period), info(i, c.period))
+			g.Expect(pp.YearsInt()).To(Equal(c.years), info(i, c.period))
+			g.Expect(pp.MonthsInt()).To(Equal(c.months), info(i, c.period))
+			g.Expect(pp.WeeksInt()).To(Equal(0), info(i, c.period))
+			g.Expect(pp.DaysInt()).To(Equal(c.days), info(i, c.period))
+			g.Expect(pp.DaysIncWeeksInt()).To(Equal(c.days), info(i, c.period))
+		})
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
 func TestNewYMWD(t *testing.T) {
 	g := NewGomegaWithT(t)
 
@@ -117,6 +147,7 @@ func TestNewYMWD(t *testing.T) {
 			g.Expect(pp.Days()).To(Equal(decimal.MustNew(int64(c.days), 0)), info(i, c.period))
 			g.Expect(pp.DaysInt()).To(Equal(c.days), info(i, c.period))
 			g.Expect(pp.DaysIncWeeks()).To(Equal(decimal.MustNew(int64(7*c.weeks+c.days), 0)), info(i, c.period))
+			g.Expect(pp.DaysIncWeeksInt()).To(Equal(7*c.weeks+c.days), info(i, c.period))
 
 			pn := NewYMWD(-c.years, -c.months, -c.weeks, -c.days)
 			en := c.period.Negate()
@@ -129,6 +160,8 @@ func TestNewYMWD(t *testing.T) {
 			g.Expect(pn.WeeksInt()).To(Equal(-c.weeks), info(i, en))
 			g.Expect(pn.Days()).To(Equal(decimal.MustNew(int64(-c.days), 0)), info(i, en))
 			g.Expect(pn.DaysInt()).To(Equal(-c.days), info(i, en))
+			g.Expect(pn.DaysIncWeeks()).To(Equal(decimal.MustNew(int64(-7*c.weeks-c.days), 0)), info(i, en))
+			g.Expect(pn.DaysIncWeeksInt()).To(Equal(-7*c.weeks-c.days), info(i, en))
 		})
 	}
 }
