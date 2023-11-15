@@ -18,3 +18,22 @@ These two can be converted to the other.
 ## Status
 
 The basic API exists but may yet change.
+
+## Upgrading
+
+The old version of this was `github.com/rickb777/date/period`, which had very limited number range and used fixed-point arithmetic.
+
+The new version depends instead on `github.com/govalues/decimal`, which gives a huge (but finite) number range. The new version includes a 'weeks' field, whereas the old version did not (it followed `time.Time` API patterns, which don't have weeks).
+
+These functions have changed:
+
+ * `New` now needs one more input parameter for the weeks field (7 parameters in total)
+ * `NewYMD` still exists; there is also `NewYMWD`, which will often be more appropriate.
+
+These methods have changed:
+
+ * `Years`, `Months`, `Weeks`, `Days`, `Hours`, `Minutes` and `Seconds` now return `decimal.Decimal`. They replace the old `YearsFloat`, `MonthsFloat`, `DaysFloat`, `HoursFloat`, `MinutesFloat` and `SecondsFloat` methods.
+ * `YearsInt`, `MonthsInt`, `WeeksInt`, `DaysInt`, `HoursInt`, `MinutesInt` and `SecondsInt` were added to obtain the fields as an `int`.
+ * `OnlyYMD` is now `OnlyYMWD`
+ * The old `ModuloDays` was dropped now that weeks are implemented fully. 
+ * `Scale` and `ScaleWithOverflowCheck` have been replaced with `Mul`, which returns the multiplication product and a possible `error`.

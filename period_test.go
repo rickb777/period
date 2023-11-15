@@ -597,3 +597,37 @@ func bst(year int, month time.Month, day, hour, min, sec, msec int) time.Time {
 func japan(year int, month time.Month, day, hour, min, sec, msec int) time.Time {
 	return time.Date(year, month, day, hour, min, sec, msec*int(time.Millisecond), tokyo)
 }
+
+//-------------------------------------------------------------------------------------------------
+
+func Test_OnlyYMWD(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	cases := []struct {
+		one    string
+		expect string
+	}{
+		{"P1Y2M3DT4H5M6S", "P1Y2M3D"},
+		{"-P6Y5M4DT3H2M1S", "-P6Y5M4D"},
+	}
+	for i, c := range cases {
+		s := MustParse(c.one).OnlyYMWD()
+		g.Expect(s).To(Equal(MustParse(c.expect)), info(i, c.expect))
+	}
+}
+
+func Test_OnlyHMS(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	cases := []struct {
+		one    string
+		expect string
+	}{
+		{"P1Y2M3DT4H5M6S", "PT4H5M6S"},
+		{"-P6Y5M4DT3H2M1S", "-PT3H2M1S"},
+	}
+	for i, c := range cases {
+		s := MustParse(c.one).OnlyHMS()
+		g.Expect(s).To(Equal(MustParse(c.expect)), info(i, c.expect))
+	}
+}

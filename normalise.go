@@ -2,7 +2,6 @@ package period
 
 import (
 	"github.com/govalues/decimal"
-	"time"
 )
 
 var (
@@ -239,79 +238,3 @@ func (period Period) negateAllFields() Period {
 	period.seconds = period.seconds.Neg()
 	return period
 }
-
-//-------------------------------------------------------------------------------------------------
-
-// DurationApprox converts a period to the equivalent duration in nanoseconds.
-// When the period specifies hours, minutes and seconds only, the result is precise.
-// however, when the period specifies years, months, weeks and days, it is impossible to
-// be precise because the result may depend on knowing date and timezone information. So
-// the duration is estimated on the basis of a year being 365.2425 days (as per Gregorian
-// calendar rules) and a month being 1/12 of a that; days are all assumed to be 24 hours long.
-//
-// Note that time.Duration is limited to the range 1 nanosecond to about 292 years maximum.
-func (period Period) DurationApprox() time.Duration {
-	d, _ := period.Duration()
-	return d
-}
-
-// Duration converts a period to the equivalent duration in nanoseconds.
-// A flag is also returned that is true when the conversion was precise, and false otherwise.
-//
-// When the period specifies hours, minutes and seconds only, the result is precise.
-// However, when the period specifies years, months, weeks and days, it is impossible to
-// be precise because the result may depend on knowing date and timezone information. So
-// the duration is estimated on the basis of a year being 365.2425 days (as per Gregorian
-// calendar rules) and a month being 1/12 of a that; days are all assumed to be 24 hours long.
-//
-// For periods shorter than one nanosecond, the duration will be zero and the precise flag
-// will be returned false.
-//
-// Note that time.Duration is limited to the range 1 nanosecond to about 292 years maximum.
-func (period Period) Duration() (time.Duration, bool) {
-	sign := time.Duration(period.Sign())
-	if sign == 0 {
-		return 0, true
-	}
-	daysE9, ok1 := totalDaysApproxE9(period)
-	ymwd := time.Duration(daysE9 * secondsPerDay)
-	hms, ok2 := totalHrMinSec(period)
-	return sign * (ymwd + hms), ymwd == 0 && ok1 && ok2
-}
-
-func totalDaysApproxE9(period Period) (int64, bool) {
-	dd, okd := fieldDuration(period.days, oneE9)
-	ww, okw := fieldDuration(period.weeks, 7*oneE9)
-	mm, okm := fieldDuration(period.months, daysPerMonthE6*oneE3)
-	yy, oky := fieldDuration(period.years, daysPerYearE6*oneE3)
-	return dd + ww + mm + yy, okd && okw && okm && oky
-}
-
-func totalHrMinSec(period Period) (time.Duration, bool) {
-	hh, okh := fieldDuration(period.hours, int64(time.Hour))
-	mm, okm := fieldDuration(period.minutes, int64(time.Minute))
-	ss, oks := fieldDuration(period.seconds, int64(time.Second))
-	return time.Duration(hh + mm + ss), okh && okm && oks
-}
-
-func fieldDuration(field decimal.Decimal, factor int64) (int64, bool) {
-	if field.Coef() == 0 {
-		return 0, true
-	}
-
-	for i := field.Scale(); i > 0; i-- {
-		factor /= 10
-	}
-
-	return int64(field.Sign()) * int64(field.Coef()) * factor, factor > 0
-}
-
-const (
-	secondsPerDay = 24 * 60 * 60 // assuming 24-hour day
-
-	daysPerYearE6  = 365242500          // 365.2425 days by the Gregorian rule
-	daysPerMonthE6 = daysPerYearE6 / 12 // 30.436875 days per month
-
-	oneE3 int64 = 1000
-	oneE9 int64 = 1_000_000_000 // used for fractions because 0 < fraction <= 999_999_999
-)

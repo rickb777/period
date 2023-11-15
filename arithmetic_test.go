@@ -141,7 +141,7 @@ func Test_AddTo(t *testing.T) {
 	}
 }
 
-func Test_Scale(t *testing.T) {
+func Test_Mul(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	cases := []struct {
@@ -189,7 +189,7 @@ func Test_Scale(t *testing.T) {
 	}
 }
 
-func Test_Scale_errors(t *testing.T) {
+func Test_Mul_errors(t *testing.T) {
 	g := NewGomegaWithT(t)
 
 	cases := []struct {
@@ -210,4 +210,145 @@ func Test_Scale_errors(t *testing.T) {
 			g.Expect(err).To(HaveOccurred())
 		})
 	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
+func Test_TotalDaysApprox(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	cases := []struct {
+		value      string
+		approxDays int
+	}{
+		// note: the negative cases are also covered (see below)
+
+		{"P0D", 0},
+		{"PT24H", 1},
+		{"PT49H", 2},
+		{"P1D", 1},
+		{"P1M", 30},
+		{"P1Y", 365},
+	}
+	for i, c := range cases {
+		p := MustParse(c.value)
+		td1 := p.TotalDaysApprox()
+		g.Expect(td1).To(Equal(c.approxDays), info(i, c.value))
+
+		td2 := p.Negate().TotalDaysApprox()
+		g.Expect(td2).To(Equal(-c.approxDays), info(i, c.value))
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
+func Test_TotalMonthsApprox(t *testing.T) {
+	g := NewGomegaWithT(t)
+
+	cases := []struct {
+		value        string
+		approxMonths int
+	}{
+		// note: the negative cases are also covered (see below)
+
+		{"P0D", 0},
+		{"P1D", 0},
+		{"P30D", 0},
+		{"P31D", 1},
+		{"P60D", 1},
+		{"P62D", 2},
+		{"P1M", 1},
+		{"P12M", 12},
+		{"P2M31D", 3},
+		{"P1Y", 12},
+		{"P2Y3M", 27},
+		{"PT24H", 0},
+		{"PT744H", 1},
+	}
+	for i, c := range cases {
+		p := MustParse(c.value)
+		td1 := p.TotalMonthsApprox()
+		g.Expect(td1).To(Equal(c.approxMonths), info(i, c.value))
+
+		td2 := p.Negate().TotalMonthsApprox()
+		g.Expect(td2).To(Equal(-c.approxMonths), info(i, c.value))
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+
+const oneMonthApprox = daysPerMonthE6 * secondsPerDay * time.Microsecond // 30.436875 days
+const oneYearApprox = 31556952 * time.Second                             // 365.2425 days
+
+func Test_Duration(t *testing.T) {
+	cases := []struct {
+		value    string
+		duration time.Duration
+		precise  bool
+	}{
+		// note: the negative cases are also covered (see below)
+
+		{"P0D", 0, true},
+
+		{"PT1S", 1 * time.Second, true},
+		{"PT0.1S", 100 * time.Millisecond, true},
+		{"PT0.001S", time.Millisecond, true},
+		{"PT0.000001S", time.Microsecond, true},
+		{"PT0.000000001S", time.Nanosecond, true},
+		{"PT0.0000000001S", 0, false},
+		{"PT3276S", 3276 * time.Second, true},
+
+		{"PT1M", 60 * time.Second, true},
+		{"PT0.1M", 6 * time.Second, true},
+		{"PT0.0001M", 6 * time.Millisecond, true},
+		{"PT0.0000001M", 6 * time.Microsecond, true},
+		{"PT0.0000000001M", 6 * time.Nanosecond, true},
+		{"PT0.00000000001M", 0, false},
+		{"PT3276M", 3276 * time.Minute, true},
+
+		{"PT1H", 3600 * time.Second, true},
+		{"PT0.1H", 360 * time.Second, true},
+		{"PT0.01H", 36 * time.Second, true},
+		{"PT0.00001H", 36 * time.Millisecond, true},
+		{"PT0.00000001H", 36 * time.Microsecond, true},
+		{"PT0.00000000001H", 36 * time.Nanosecond, true},
+		{"PT0.0000000000001H", 0, false},
+		{"PT3220H", 3220 * time.Hour, true},
+
+		{"P1D", 24 * time.Hour, false},
+
+		// days, months and years conversions are never precise
+		{"P0.1D", 144 * time.Minute, false},
+		{"P10000D", 10000 * 24 * time.Hour, false},
+		{"P1W", 168 * time.Hour, false},
+		{"P0.1W", 16*time.Hour + 48*time.Minute, false},
+		{"P10000W", 10000 * 7 * 24 * time.Hour, false},
+		{"P1M", oneMonthApprox, false},
+		{"P0.1M", oneMonthApprox / 10, false},
+		{"P3504M", 3504 * oneMonthApprox, false}, // 292 years
+		{"P1Y", oneYearApprox, false},
+		{"P0.1Y", oneYearApprox / 10, false},
+		{"P292Y", 292 * oneYearApprox, false}, // time.Duration represents up to 292 years
+		// long second spans
+		{"PT86400000S", 86400000 * time.Second, true},
+	}
+
+	for i, c := range cases {
+		t.Run(fmt.Sprintf("%d %s", i, c.value), func(t *testing.T) {
+			testPeriodToDuration(t, i, c.value, c.duration, c.precise)
+			testPeriodToDuration(t, i, "-"+c.value, -c.duration, c.precise)
+		})
+	}
+}
+
+func testPeriodToDuration(t *testing.T, i int, value string, duration time.Duration, precise bool) {
+	t.Helper()
+	g := NewGomegaWithT(t)
+	hint := info(i, "%s %s %v", value, duration, precise)
+	pp := MustParse(value)
+	d1, prec := pp.Duration()
+	g.Expect(d1).To(Equal(duration), hint)
+	g.Expect(prec).To(Equal(precise), hint)
+	d2 := pp.DurationApprox()
+	g.Expect(d2).To(Equal(duration), hint)
 }
