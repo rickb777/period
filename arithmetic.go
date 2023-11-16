@@ -153,7 +153,7 @@ func (period Period) TotalDaysApprox() int {
 	}
 	pn := period.Normalise(false)
 	tdE9, _ := totalDaysApproxE9(pn)
-	return sign * int(tdE9/oneE9)
+	return sign * int(tdE9/1e9)
 }
 
 // TotalMonthsApprox gets the approximate total number of months in the period. The days component
@@ -166,7 +166,7 @@ func (period Period) TotalMonthsApprox() int {
 	}
 	pn := period.Normalise(false)
 	tdE9, _ := totalDaysApproxE9(pn)
-	return sign * int((tdE9/daysPerMonthE6)/oneE3)
+	return sign * int((tdE9/daysPerMonthE6)/1e3)
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -209,10 +209,10 @@ func (period Period) Duration() (time.Duration, bool) {
 }
 
 func totalDaysApproxE9(period Period) (int64, bool) {
-	dd, okd := fieldDuration(period.days, oneE9)
-	ww, okw := fieldDuration(period.weeks, 7*oneE9)
-	mm, okm := fieldDuration(period.months, daysPerMonthE6*oneE3)
-	yy, oky := fieldDuration(period.years, daysPerYearE6*oneE3)
+	dd, okd := fieldDuration(period.days, 1e9)
+	ww, okw := fieldDuration(period.weeks, 7*1e9)
+	mm, okm := fieldDuration(period.months, daysPerMonthE6*1e3)
+	yy, oky := fieldDuration(period.years, daysPerYearE6*1e3)
 	return dd + ww + mm + yy, okd && okw && okm && oky
 }
 
@@ -240,7 +240,4 @@ const (
 
 	daysPerYearE6  = 365242500          // 365.2425 days by the Gregorian rule
 	daysPerMonthE6 = daysPerYearE6 / 12 // 30.436875 days per month
-
-	oneE3 int64 = 1000
-	oneE9 int64 = 1_000_000_000 // used for fractions because 0 < fraction <= 999_999_999
 )
