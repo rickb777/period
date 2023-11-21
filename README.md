@@ -23,7 +23,7 @@ The basic API exists but may yet change.
 
 The old version of this was `github.com/rickb777/date/period`, which had very limited number range and used fixed-point arithmetic.
 
-The new version depends instead on `github.com/govalues/decimal`, which gives a huge (but finite) number range. The new version includes a 'weeks' field, whereas the old version did not (it followed `time.Time` API patterns, which don't have weeks).
+The new version, here, depends instead on `github.com/govalues/decimal`, which gives a huge (but finite) number range. There is now a 'weeks' field, which the old version did not have (it followed `time.Time` API patterns, which don't have weeks).
 
 These functions have changed:
 
@@ -32,8 +32,8 @@ These functions have changed:
 
 These methods have changed:
 
- * `Years`, `Months`, `Weeks`, `Days`, `Hours`, `Minutes` and `Seconds` now return `decimal.Decimal`. They replace the old `YearsFloat`, `MonthsFloat`, `DaysFloat`, `HoursFloat`, `MinutesFloat` and `SecondsFloat` methods.
- * `YearsInt`, `MonthsInt`, `WeeksInt`, `DaysInt`, `HoursInt`, `MinutesInt` and `SecondsInt` were added to obtain the fields as an `int`.
- * `OnlyYMD` is now `OnlyYMWD`
+ * `YearsDecimal`, `MonthsDecimal`, `WeeksDecimal`, `DaysDecimal`, `HoursDecimal`, `MinutesDecimal` and `SecondsDecimal` return the fields as `decimal.Decimal`. They replace the old `YearsFloat`, `MonthsFloat`, `DaysFloat`, `HoursFloat`, `MinutesFloat` and `SecondsFloat` methods. `Years`, `Months`, `Weeks`, `Days`, `Hours`, `Minutes` and `Seconds` still return `int` as before.
+ * `DaysIncWeeks` and `DaysIncWeeksDecimal` were added to return d + w * 7, which provides the behaviour similar to the old `Days` and `DaysFloat` methods. 
  * The old `ModuloDays` was dropped now that weeks are implemented fully. 
+ * `OnlyYMD` is now `OnlyYMWD`
  * `Scale` and `ScaleWithOverflowCheck` have been replaced with `Mul`, which returns the multiplication product and a possible `error`.

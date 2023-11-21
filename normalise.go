@@ -58,7 +58,7 @@ func (period Period) NormaliseDaysToYears() Period {
 		return period.Negate().NormaliseDaysToYears().Negate()
 	}
 
-	days := period.DaysIncWeeks()
+	days := period.DaysIncWeeksDecimal()
 
 	if days.Cmp(threeSixSix) < 0 {
 		return period

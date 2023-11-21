@@ -250,99 +250,98 @@ func (period Period) OnlyHMS() Period {
 
 //-------------------------------------------------------------------------------------------------
 
-// YearsInt gets the whole number of years in the period.
-func (period Period) YearsInt() int {
-	i, _, _ := period.Years().Int64(0)
+// Years gets the whole number of years in the period.
+func (period Period) Years() int {
+	i, _, _ := period.YearsDecimal().Int64(0)
 	return int(i)
 }
 
-// Years gets the number of years in the period, including any fraction present.
-func (period Period) Years() decimal.Decimal {
+// YearsDecimal gets the number of years in the period, including any fraction present.
+func (period Period) YearsDecimal() decimal.Decimal {
 	return period.applySign(period.years)
 }
 
-// MonthsInt gets the whole number of months in the period.
-func (period Period) MonthsInt() int {
-	i, _, _ := period.Months().Int64(0)
+// Months gets the whole number of months in the period.
+func (period Period) Months() int {
+	i, _, _ := period.MonthsDecimal().Int64(0)
 	return int(i)
 }
 
-// Months gets the number of months in the period, including any fraction present.
-func (period Period) Months() decimal.Decimal {
+// MonthsDecimal gets the number of months in the period, including any fraction present.
+func (period Period) MonthsDecimal() decimal.Decimal {
 	return period.applySign(period.months)
 }
 
-// WeeksInt gets the whole number of weeks in the period.
-func (period Period) WeeksInt() int {
-	i, _, _ := period.Weeks().Int64(0)
+// Weeks gets the whole number of weeks in the period.
+func (period Period) Weeks() int {
+	i, _, _ := period.WeeksDecimal().Int64(0)
 	return int(i)
 }
 
-// Weeks gets the number of weeks in the period, including any fraction present.
-func (period Period) Weeks() decimal.Decimal {
+// WeeksDecimal gets the number of weeks in the period, including any fraction present.
+func (period Period) WeeksDecimal() decimal.Decimal {
 	return period.applySign(period.weeks)
 }
 
-// DaysInt gets the whole number of days in the period.
-func (period Period) DaysInt() int {
-	i, _, _ := period.Days().Int64(0)
+// Days gets the whole number of days in the period.
+func (period Period) Days() int {
+	i, _, _ := period.DaysDecimal().Int64(0)
 	return int(i)
 }
 
-// Days gets the number of days in the period, including any fraction present.
-func (period Period) Days() decimal.Decimal {
+// DaysDecimal gets the number of days in the period, including any fraction present.
+func (period Period) DaysDecimal() decimal.Decimal {
 	return period.applySign(period.days)
 }
 
-// DaysIncWeeksInt gets the whole number of days in the period.
+// DaysIncWeeks gets the whole number of days in the period, including all the weeks.
 // The result is d + (w * 7), given d days and w weeks.
-func (period Period) DaysIncWeeksInt() int {
-	i, _, _ := period.DaysIncWeeks().Int64(0)
+func (period Period) DaysIncWeeks() int {
+	i, _, _ := period.DaysIncWeeksDecimal().Int64(0)
 	return int(i)
 }
 
-// DaysIncWeeks gets the number of days in the period, including all the weeks and including any
+// DaysIncWeeksDecimal gets the number of days in the period, including all the weeks and including any
 // fraction present. The result is d + (w * 7), given d days and w weeks.
-func (period Period) DaysIncWeeks() decimal.Decimal {
+func (period Period) DaysIncWeeksDecimal() decimal.Decimal {
 	wdays, _ := period.weeks.Mul(seven)
 	days, _ := wdays.Add(period.days)
 	return period.applySign(days)
 }
 
-// HoursInt gets the whole number of hours in the period.
-func (period Period) HoursInt() int {
-	i, _, _ := period.Hours().Int64(0)
+// Hours gets the whole number of hours in the period.
+func (period Period) Hours() int {
+	i, _, _ := period.HoursDecimal().Int64(0)
 	return int(i)
 }
 
-// Hours gets the number of hours in the period, including any fraction present.
-func (period Period) Hours() decimal.Decimal {
+// HoursDecimal gets the number of hours in the period, including any fraction present.
+func (period Period) HoursDecimal() decimal.Decimal {
 	return period.applySign(period.hours)
 }
 
-// MinutesInt gets the whole number of minutes in the period.
-func (period Period) MinutesInt() int {
-	i, _, _ := period.Minutes().Int64(0)
+// Minutes gets the whole number of minutes in the period.
+func (period Period) Minutes() int {
+	i, _, _ := period.MinutesDecimal().Int64(0)
 	return int(i)
 }
 
-// Minutes gets the number of minutes in the period, including any fraction present.
-func (period Period) Minutes() decimal.Decimal {
+// MinutesDecimal gets the number of minutes in the period, including any fraction present.
+func (period Period) MinutesDecimal() decimal.Decimal {
 	return period.applySign(period.minutes)
 }
 
-// SecondsInt gets the whole number of seconds in the period.
-func (period Period) SecondsInt() int {
-	i, _, _ := period.Seconds().Int64(0)
+// Seconds gets the whole number of seconds in the period.
+func (period Period) Seconds() int {
+	i, _, _ := period.SecondsDecimal().Int64(0)
 	return int(i)
 }
 
-// Seconds gets the number of seconds in the period, including any fraction present.
-func (period Period) Seconds() decimal.Decimal {
+// SecondsDecimal gets the number of seconds in the period, including any fraction present.
+func (period Period) SecondsDecimal() decimal.Decimal {
 	return period.applySign(period.seconds)
 }
 
-// Seconds gets the number of seconds in the period, including any fraction present.
 func (period Period) applySign(field decimal.Decimal) decimal.Decimal {
 	if period.neg {
 		return field.Neg()
