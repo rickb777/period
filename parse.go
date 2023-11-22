@@ -23,6 +23,9 @@ func MustParse[S ISOString | string](isoPeriod S) Period {
 //
 // In addition, a plus or minus sign can precede the period, e.g. "-P10D"
 //
+// It is possible to mix a number of weeks with other fields (e.g. P2M1W), although
+// this would not be allowed by ISO-8601. See SimplifyWeeks.
+//
 // The zero value can be represented in several ways: all of the following
 // are equivalent: "P0Y", "P0M", "P0W", "P0D", "PT0H", PT0M", PT0S", and "P0".
 // The canonical zero is "P0D".
@@ -35,6 +38,9 @@ func Parse[S ISOString | string](isoPeriod S) (Period, error) {
 // Parse parses strings that specify periods using ISO-8601 rules.
 //
 // In addition, a plus or minus sign can precede the period, e.g. "-P10D"
+//
+// It is possible to mix a number of weeks with other fields (e.g. P2M1W), although
+// this would not be allowed by ISO-8601. See SimplifyWeeks.
 //
 // The zero value can be represented in several ways: all of the following
 // are equivalent: "P0Y", "P0M", "P0W", "P0D", "PT0H", PT0M", PT0S", and "P0".

@@ -103,11 +103,29 @@ func moveWholePartsLeft(larger, smaller, nd decimal.Decimal) (decimal.Decimal, d
 //-------------------------------------------------------------------------------------------------
 
 // SimplifyWeeksToDays adds 7 * the weeks field to the days field, and sets the weeks field to zero.
+// See also SimplifyWeeks.
 func (period Period) SimplifyWeeksToDays() Period {
 	wdays, _ := period.weeks.Mul(seven)
 	days, _ := wdays.Add(period.days)
 	period.days = days
 	period.weeks = decimal.Zero
+	return period
+}
+
+// SimplifyWeeks adds 7 * the weeks field to the days field, and sets the weeks field to zero,
+// but only if some other fields are non-zero.
+//
+// This will increase compatibility with external systems that do not expect to receive a weeks
+// component unless the other components are zero. This is because ISO-8601 periods contain either
+// weeks or other fields but not both.
+//
+// See also SimplifyWeeksToDays.
+func (period Period) SimplifyWeeks() Period {
+	if period.years.Coef() != 0 || period.months.Coef() != 0 || period.days.Coef() != 0 ||
+		period.hours.Coef() != 0 || period.minutes.Coef() != 0 || period.seconds.Coef() != 0 {
+
+		return period.SimplifyWeeksToDays()
+	}
 	return period
 }
 

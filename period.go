@@ -296,6 +296,8 @@ func (period Period) DaysDecimal() decimal.Decimal {
 
 // DaysIncWeeks gets the whole number of days in the period, including all the weeks.
 // The result is d + (w * 7), given d days and w weeks.
+//
+// See also SimplifyWeeksToDays.
 func (period Period) DaysIncWeeks() int {
 	i, _, _ := period.DaysIncWeeksDecimal().Int64(0)
 	return int(i)
@@ -303,6 +305,8 @@ func (period Period) DaysIncWeeks() int {
 
 // DaysIncWeeksDecimal gets the number of days in the period, including all the weeks and including any
 // fraction present. The result is d + (w * 7), given d days and w weeks.
+//
+// See also SimplifyWeeksToDays.
 func (period Period) DaysIncWeeksDecimal() decimal.Decimal {
 	wdays, _ := period.weeks.Mul(seven)
 	days, _ := wdays.Add(period.days)
