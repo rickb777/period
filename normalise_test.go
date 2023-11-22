@@ -234,7 +234,9 @@ func Test_Simplify(t *testing.T) {
 		{input: "P0.11111Y", precise: "P0.11111Y", imprecise: "P0.11111Y"},
 		{input: "P0.1M", precise: "P0.1M", imprecise: "P0.1M"},
 
-		{input: "P0.1W", precise: "P0.7D", imprecise: "P0.7D"},
+		{input: "P0.1W", precise: "P0.1W", imprecise: "P0.1W"}, // weeks simplification is nuanced
+		{input: "P1M0.1W", precise: "P1M0.7D", imprecise: "P1M0.7D"},
+
 		{input: "P0.1D", precise: "P0.1D", imprecise: "P0.1D"},
 
 		{input: "PT0.1H", precise: "PT6M", imprecise: "PT6M"},

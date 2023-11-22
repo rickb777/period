@@ -141,7 +141,7 @@ func (period Period) SimplifyWeeks() Period {
 // it operates in either precise or approximate mode.
 //
 //   - Years may become multiples of 12 months if the number of months is non-zero - both modes.
-//   - Weeks may become multiples of 7 days if the number of days is non-zero - both modes.
+//   - Weeks - see SimplifyWeeks - both modes.
 //   - Days may become multiples of 24 hours if the number of hours is non-zero - approximate mode only
 //   - Hours may become multiples of 60 minutes if the number of minutes is non-zero - both modes.
 //   - Minutes may become multiples of 60 seconds if the number of seconds is non-zero - both modes.
@@ -149,13 +149,13 @@ func (period Period) SimplifyWeeks() Period {
 // If the calculations would lead to arithmetic errors, the current values are kept unaltered.
 func (period Period) Simplify(precise bool) Period {
 	period.years, period.months = moveToRight(period.years, period.months, twelve)
-	period.weeks, period.days = moveToRight(period.weeks, period.days, seven)
+	p2 := period.SimplifyWeeks() // more thorough
 	if !precise {
-		period.days, period.hours = moveToRight(period.days, period.hours, twentyFour)
+		p2.days, p2.hours = moveToRight(p2.days, p2.hours, twentyFour)
 	}
-	period.hours, period.minutes = moveToRight(period.hours, period.minutes, sixty)
-	period.minutes, period.seconds = moveToRight(period.minutes, period.seconds, sixty)
-	return period
+	p2.hours, p2.minutes = moveToRight(p2.hours, p2.minutes, sixty)
+	p2.minutes, p2.seconds = moveToRight(p2.minutes, p2.seconds, sixty)
+	return p2
 }
 
 func moveToRight(larger, smaller, nd decimal.Decimal) (decimal.Decimal, decimal.Decimal) {
