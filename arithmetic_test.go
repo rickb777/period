@@ -6,11 +6,12 @@ package period
 
 import (
 	"fmt"
-	"github.com/govalues/decimal"
-	. "github.com/onsi/gomega"
 	"math"
 	"testing"
 	"time"
+
+	"github.com/govalues/decimal"
+	. "github.com/onsi/gomega"
 )
 
 func Test_Add_Subtract(t *testing.T) {
@@ -82,12 +83,15 @@ func Test_AddTo(t *testing.T) {
 	const hour = 60 * minute
 
 	est := mustLoadLocation("America/New_York")
+	aest := mustLoadLocation("Australia/Sydney")
 
 	times := []time.Time{
 		// A conveniently round number but with non-zero nanoseconds (14 July 2017 @ 2:40am UTC)
 		time.Unix(1500000000, 1).UTC(),
 		// This specific time fails for EST due behaviour of time.Time.AddDate
 		time.Date(2020, 11, 1, 1, 0, 0, 0, est),
+		// Testing to ensure that adding zero with a DST day does not blow up due behaviour of time.Time.AddDate
+		time.Date(2024, 4, 6, 15, 0, 0, 0, time.UTC).In(aest),
 	}
 
 	for _, t0 := range times {
