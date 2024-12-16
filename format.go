@@ -68,14 +68,14 @@ func writeField(w usefulWriter, field decimal.Decimal, fieldDesignator Designato
 
 //-------------------------------------------------------------------------------------------------
 
-// Format converts the period to human-readable form using DefaultFormatLocalisation.
-// To adjust the result, see the Normalise, NormaliseDaysToYears, Simplify and SimplifyWeeksToDays methods.
+// Format converts the period to human-readable form using [DefaultFormatLocalisation].
+// To adjust the result, see the [Period.Normalise], [Period.NormaliseDaysToYears], [Period.Simplify] and [Period.SimplifyWeeksToDays] methods.
 func (period Period) Format() string {
 	return period.FormatLocalised(DefaultFormatLocalisation)
 }
 
 // FormatLocalised converts the period to human-readable form in a localisable way.
-// To adjust the result, see the Normalise, NormaliseDaysToYears, Simplify and SimplifyWeeksToDays methods.
+// To adjust the result, see the [Period.Normalise], [Period.NormaliseDaysToYears], [Period.Simplify] and [Period.SimplifyWeeksToDays] methods.
 func (period Period) FormatLocalised(config FormatLocalisation) string {
 	if period.IsZero() {
 		return config.ZeroValue

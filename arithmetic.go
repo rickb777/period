@@ -54,7 +54,7 @@ func (period Period) AddTo(t time.Time) (time.Time, bool) {
 
 //-------------------------------------------------------------------------------------------------
 
-// Add adds two periods together. Use this method along with Negate in order to subtract periods.
+// Add adds two periods together. Use this method along with [Period.Negate] in order to subtract periods.
 // Arithmetic overflow will result in an error.
 func (period Period) Add(other Period) (Period, error) {
 	var left, right Period
