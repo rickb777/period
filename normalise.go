@@ -30,7 +30,7 @@ var (
 //
 // If the calculations would lead to arithmetic errors, the current values are kept unaltered.
 //
-// See also NormaliseDaysToYears().
+// See also [Period.NormaliseDaysToYears].
 func (period Period) Normalise(precise bool) Period {
 	// first phase - ripple large numbers to the left
 	period.minutes, period.seconds = moveWholePartsLeft(period.minutes, period.seconds, sixty)
@@ -50,7 +50,7 @@ func (period Period) Normalise(precise bool) Period {
 //
 // If the calculations would lead to arithmetic errors, the current values are kept unaltered.
 //
-// A common use pattern would be to chain this after Normalise, i.e.
+// A common use pattern would be to chain this after [Period.Normalise], i.e.
 //
 //	p.Normalise(false).NormaliseDaysToYears()
 func (period Period) NormaliseDaysToYears() Period {
@@ -103,7 +103,7 @@ func moveWholePartsLeft(larger, smaller, nd decimal.Decimal) (decimal.Decimal, d
 //-------------------------------------------------------------------------------------------------
 
 // SimplifyWeeksToDays adds 7 * the weeks field to the days field, and sets the weeks field to zero.
-// See also SimplifyWeeks.
+// See also [Period.SimplifyWeeks].
 func (period Period) SimplifyWeeksToDays() Period {
 	wdays, _ := period.weeks.Mul(seven)
 	days, _ := wdays.Add(period.days)
@@ -119,7 +119,7 @@ func (period Period) SimplifyWeeksToDays() Period {
 // component unless the other components are zero. This is because ISO-8601 periods contain either
 // weeks or other fields but not both.
 //
-// See also SimplifyWeeksToDays.
+// See also [Period.SimplifyWeeksToDays].
 func (period Period) SimplifyWeeks() Period {
 	if period.years.Coef() != 0 || period.months.Coef() != 0 || period.days.Coef() != 0 ||
 		period.hours.Coef() != 0 || period.minutes.Coef() != 0 || period.seconds.Coef() != 0 {
@@ -141,7 +141,7 @@ func (period Period) SimplifyWeeks() Period {
 // it operates in either precise or approximate mode.
 //
 //   - Years may become multiples of 12 months if the number of months is non-zero - both modes.
-//   - Weeks - see SimplifyWeeks - both modes.
+//   - Weeks - see [Period.SimplifyWeeks] - both modes.
 //   - Days may become multiples of 24 hours if the number of hours is non-zero - approximate mode only
 //   - Hours may become multiples of 60 minutes if the number of minutes is non-zero - both modes.
 //   - Minutes may become multiples of 60 seconds if the number of seconds is non-zero - both modes.

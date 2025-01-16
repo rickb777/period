@@ -9,7 +9,7 @@ import (
 	"github.com/govalues/decimal"
 )
 
-// MustParse is as per Parse except that it panics if the string cannot be parsed.
+// MustParse is as per [period.Parse] except that it panics if the string cannot be parsed.
 // This is intended for setup code; don't use it for user inputs.
 func MustParse[S ISOString | string](isoPeriod S) Period {
 	p, err := Parse(isoPeriod)
@@ -24,7 +24,7 @@ func MustParse[S ISOString | string](isoPeriod S) Period {
 // In addition, a plus or minus sign can precede the period, e.g. "-P10D"
 //
 // It is possible to mix a number of weeks with other fields (e.g. P2M1W), although
-// this would not be allowed by ISO-8601. See SimplifyWeeks.
+// this would not be allowed by ISO-8601. See [Period.SimplifyWeeks].
 //
 // The zero value can be represented in several ways: all of the following
 // are equivalent: "P0Y", "P0M", "P0W", "P0D", "PT0H", PT0M", PT0S", and "P0".
@@ -40,7 +40,7 @@ func Parse[S ISOString | string](isoPeriod S) (Period, error) {
 // In addition, a plus or minus sign can precede the period, e.g. "-P10D"
 //
 // It is possible to mix a number of weeks with other fields (e.g. P2M1W), although
-// this would not be allowed by ISO-8601. See SimplifyWeeks.
+// this would not be allowed by ISO-8601. See [Period.SimplifyWeeks].
 //
 // The zero value can be represented in several ways: all of the following
 // are equivalent: "P0Y", "P0M", "P0W", "P0D", "PT0H", PT0M", PT0S", and "P0".
