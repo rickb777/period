@@ -17,7 +17,7 @@ These two can be converted to the other.
 
 ## Status
 
-The basic API exists but may yet change.
+The API is now stable for v1.
 
 ## Upgrading
 
