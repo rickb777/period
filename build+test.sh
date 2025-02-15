@@ -12,11 +12,15 @@ function v
 }
 
 if ! type -p goveralls; then
+  v go get     github.com/mattn/goveralls
   v go install github.com/mattn/goveralls
+  go mod tidy
 fi
 
 if ! type -p shadow; then
+  v go get     golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow
   v go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow
+  go mod tidy
 fi
 
 echo period...
