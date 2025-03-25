@@ -2,26 +2,24 @@ package period
 
 import (
 	"github.com/govalues/decimal"
-	. "github.com/onsi/gomega"
+	"github.com/rickb777/expect"
 	"testing"
 )
 
 func TestSet(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	p := Period{}
 	err := p.Set("P2D")
 
-	g.Expect(err).NotTo(HaveOccurred())
-	g.Expect(p).To(Equal(Period{days: decimal.Two}))
+	expect.Error(err).Not().ToHaveOccurred(t)
+	expect.Any(p).ToBe(t, Period{days: decimal.Two})
 
-	g.Expect(p.Get()).To(Equal("P2D"))
+	expect.Any(p.Get()).ToBe(t, "P2D")
 
 	err = p.Set("Foo")
 
-	g.Expect(err).To(HaveOccurred())
+	expect.Error(err).ToHaveOccurred(t)
 
 	typ := p.Type()
 
-	g.Expect(typ).To(Equal("period"))
+	expect.String(typ).ToBe(t, "period")
 }

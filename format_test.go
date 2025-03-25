@@ -2,13 +2,11 @@ package period
 
 import (
 	"fmt"
-	. "github.com/onsi/gomega"
+	"github.com/rickb777/expect"
 	"testing"
 )
 
 func Test_String(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		expected ISOString
 		p64      Period
@@ -69,7 +67,7 @@ func Test_String(t *testing.T) {
 		t.Run(fmt.Sprintf("%d %s", i, c.expected), func(t *testing.T) {
 			// check the normal case
 			sp1 := c.p64.Period()
-			g.Expect(sp1).To(Equal(c.expected))
+			expect.String(sp1).ToBe(t, c.expected)
 
 			// check the negative case
 			if !c.p64.IsZero() {
@@ -78,15 +76,15 @@ func Test_String(t *testing.T) {
 				if c.expected[0] == '-' {
 					ne = c.expected[1:]
 				}
-				g.Expect(sn).To(Equal(ne))
+				expect.Any(sn).ToBe(t, ne)
 			}
 
 			// also check WriteTo method is consistent and returns the correct count
 			buf := simpleBuffer{}
 			n, err := c.p64.WriteTo(&buf)
-			g.Expect(err).NotTo(HaveOccurred())
-			g.Expect(n).To(Equal(int64(len(string(buf.bs)))))
-			g.Expect(string(buf.bs)).To(Equal(string(sp1)))
+			expect.Error(err).Not().ToHaveOccurred(t)
+			expect.Number(n).ToBe(t, int64(len(string(buf.bs))))
+			expect.String(buf.bs).ToEqual(t, string(sp1))
 		})
 	}
 }
@@ -104,8 +102,6 @@ func (sb *simpleBuffer) Write(bs []byte) (int, error) {
 //-------------------------------------------------------------------------------------------------
 
 func Test_Format(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		period   string
 		expected string
@@ -156,11 +152,11 @@ func Test_Format(t *testing.T) {
 		t.Run(fmt.Sprintf("%d %s", i, c.period), func(t *testing.T) {
 			p := MustParse(c.period)
 			sp := p.Format()
-			g.Expect(sp).To(Equal(c.expected), info(i, "%s -> %s", p, c.expected))
+			expect.Any(sp).Info("%d%s -> %s", i, p, c.expected).ToBe(t, c.expected)
 
 			en := p.Negate()
 			sn := en.Format()
-			g.Expect(sn).To(Equal(c.expected), info(i, "%s -> %s", en, c.expected))
+			expect.Any(sn).Info("%d %s -> %s", i, p, c.expected).ToBe(t, c.expected)
 		})
 	}
 }

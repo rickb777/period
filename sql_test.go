@@ -7,14 +7,11 @@ package period
 import (
 	"database/sql/driver"
 	"fmt"
+	"github.com/rickb777/expect"
 	"testing"
-
-	. "github.com/onsi/gomega"
 )
 
 func TestPeriodScan(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		v        interface{}
 		expected Period
@@ -30,29 +27,26 @@ func TestPeriodScan(t *testing.T) {
 		t.Run(fmt.Sprintf("%d %s", i, c.expected), func(t *testing.T) {
 			r := new(Period)
 			e := r.Scan(c.v)
-			g.Expect(e).NotTo(HaveOccurred())
-			g.Expect(*r).To(Equal(c.expected))
+			expect.Error(e).Info("%d %v", i, c).Not().ToHaveOccurred(t)
+			expect.Any(*r).ToBe(t, c.expected)
 
 			var d driver.Valuer = *r
 
 			q, e := d.Value()
-			g.Expect(e).NotTo(HaveOccurred())
-			g.Expect(q.(string)).To(Equal(c.expected.String()))
+			expect.Error(e).Info("%d %v", i, c).Not().ToHaveOccurred(t)
+			expect.String(q.(string)).ToBe(t, c.expected.String())
 		})
 	}
 }
 
 func TestPeriodScan_nil_value(t *testing.T) {
-	g := NewGomegaWithT(t)
 	r := new(Period)
 	e := r.Scan(nil)
-	g.Expect(e).NotTo(HaveOccurred())
+	expect.Error(e).Not().ToHaveOccurred(t)
 }
 
 func TestPeriodScan_problem_type(t *testing.T) {
-	g := NewGomegaWithT(t)
 	r := new(Period)
 	e := r.Scan(1)
-	g.Expect(e).To(HaveOccurred())
-	g.Expect(e.Error()).To(ContainSubstring("not a meaningful period"))
+	expect.Error(e).ToContain(t, "not a meaningful period")
 }

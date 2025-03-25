@@ -10,13 +10,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/govalues/decimal"
-	. "github.com/onsi/gomega"
+	"github.com/rickb777/expect"
 )
 
-func Test_Add_Subtract(t *testing.T) {
-	g := NewGomegaWithT(t)
+var filter = cmpopts.IgnoreUnexported(Period{})
 
+func Test_Add_Subtract(t *testing.T) {
 	cases := []struct {
 		one, two        ISOString
 		sum, difference ISOString
@@ -64,19 +65,17 @@ func Test_Add_Subtract(t *testing.T) {
 			b := MustParse(c.two)
 
 			s, err := a.Add(b)
-			g.Expect(err).NotTo(HaveOccurred())
-			g.Expect(s).To(Equal(MustParse(c.sum)), info(i, "%s + %s = %s", c.one, c.two, s))
+			expect.Error(err).Not().ToHaveOccurred(t)
+			expect.Any(s).Info("%d %s + %s = %s", i, c.one, c.two, s).Using(filter).ToBe(t, MustParse(c.sum))
 
 			d, err := a.Subtract(b)
-			g.Expect(err).NotTo(HaveOccurred())
-			g.Expect(d).To(Equal(MustParse(c.difference)), info(i, "%s - %s = %s", c.one, c.two, d))
+			expect.Error(err).Not().ToHaveOccurred(t)
+			expect.Any(d).Info("%d %s + %s = %s", i, c.one, c.two, s).Using(filter).ToBe(t, MustParse(c.difference))
 		})
 	}
 }
 
 func Test_AddTo(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	const millisec = 1000000
 	const second = 1000 * millisec
 	const minute = 60 * second
@@ -138,16 +137,14 @@ func Test_AddTo(t *testing.T) {
 
 				hint := info(i, "value=%s t0=%s, t1=%s, exp=%s", c.value,
 					t0.Format(time.RFC3339Nano), t1.Format(time.RFC3339Nano), c.result.Format(time.RFC3339Nano))
-				g.Expect(t1.Equal(c.result)).To(BeTrue(), hint)
-				g.Expect(prec).To(Equal(c.precise))
+				expect.Bool(t1.Equal(c.result)).Info(hint).ToBeTrue(t)
+				expect.Bool(prec).Info(hint).ToBe(t, c.precise)
 			})
 		}
 	}
 }
 
 func Test_Mul(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		input    ISOString
 		factor   decimal.Decimal
@@ -187,14 +184,13 @@ func Test_Mul(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.input), func(t *testing.T) {
 			s, err := MustParse(c.input).Mul(c.factor)
-			g.Expect(err).NotTo(HaveOccurred())
-			g.Expect(s).To(Equal(MustParse(c.expected)), info(i, "%s * %s -> %s", c.input, c.factor, c.expected))
+			expect.Error(err).Not().ToHaveOccurred(t)
+			expect.Any(s).Info("%d %s * %s -> %s", i, c.input, c.factor, c.expected).Using(filter).ToBe(t, MustParse(c.expected))
 		})
 	}
 }
 
 func Test_Mul_errors(t *testing.T) {
-	g := NewGomegaWithT(t)
 
 	cases := []struct {
 		input  Period
@@ -211,7 +207,7 @@ func Test_Mul_errors(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.input), func(t *testing.T) {
 			_, err := c.input.Mul(c.factor)
-			g.Expect(err).To(HaveOccurred())
+			expect.Error(err).ToHaveOccurred(t)
 		})
 	}
 }
@@ -219,7 +215,6 @@ func Test_Mul_errors(t *testing.T) {
 //-------------------------------------------------------------------------------------------------
 
 func Test_TotalDaysApprox(t *testing.T) {
-	g := NewGomegaWithT(t)
 
 	cases := []struct {
 		value      string
@@ -237,18 +232,16 @@ func Test_TotalDaysApprox(t *testing.T) {
 	for i, c := range cases {
 		p := MustParse(c.value)
 		td1 := p.TotalDaysApprox()
-		g.Expect(td1).To(Equal(c.approxDays), info(i, c.value))
+		expect.Number(td1).Info("%d %v", i, c.value).ToBe(t, c.approxDays)
 
 		td2 := p.Negate().TotalDaysApprox()
-		g.Expect(td2).To(Equal(-c.approxDays), info(i, c.value))
+		expect.Number(td2).Info("%d %v", i, c.value).ToBe(t, -c.approxDays)
 	}
 }
 
 //-------------------------------------------------------------------------------------------------
 
 func Test_TotalMonthsApprox(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		value        string
 		approxMonths int
@@ -272,10 +265,10 @@ func Test_TotalMonthsApprox(t *testing.T) {
 	for i, c := range cases {
 		p := MustParse(c.value)
 		td1 := p.TotalMonthsApprox()
-		g.Expect(td1).To(Equal(c.approxMonths), info(i, c.value))
+		expect.Number(td1).Info("%d %v", i, c.value).ToBe(t, c.approxMonths)
 
 		td2 := p.Negate().TotalMonthsApprox()
-		g.Expect(td2).To(Equal(-c.approxMonths), info(i, c.value))
+		expect.Number(td2).Info("%d %v", i, c.value).ToBe(t, -c.approxMonths)
 	}
 }
 
@@ -347,12 +340,11 @@ func Test_Duration(t *testing.T) {
 
 func testPeriodToDuration(t *testing.T, i int, value string, duration time.Duration, precise bool) {
 	t.Helper()
-	g := NewGomegaWithT(t)
 	hint := info(i, "%s %s %v", value, duration, precise)
 	pp := MustParse(value)
 	d1, prec := pp.Duration()
-	g.Expect(d1).To(Equal(duration), hint)
-	g.Expect(prec).To(Equal(precise), hint)
+	expect.Number(d1).Info(hint).ToBe(t, duration)
+	expect.Bool(prec).Info(hint).ToBe(t, precise)
 	d2 := pp.DurationApprox()
-	g.Expect(d2).To(Equal(duration), hint)
+	expect.Number(d2).Info(hint).ToBe(t, duration)
 }

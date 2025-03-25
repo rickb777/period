@@ -7,7 +7,7 @@ package period
 import (
 	"fmt"
 	"github.com/govalues/decimal"
-	. "github.com/onsi/gomega"
+	"github.com/rickb777/expect"
 	"math"
 	"testing"
 	"time"
@@ -38,8 +38,6 @@ func add(a, b decimal.Decimal) decimal.Decimal {
 //-------------------------------------------------------------------------------------------------
 
 func TestNewHMS(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	const largeInt = math.MaxInt32
 
 	cases := []struct {
@@ -60,23 +58,23 @@ func TestNewHMS(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %dh %dm %ds", i, c.hours, c.minutes, c.seconds), func(t *testing.T) {
 			pp := NewHMS(c.hours, c.minutes, c.seconds)
-			g.Expect(pp).To(Equal(c.period), info(i, c.period))
-			g.Expect(pp.HoursDecimal()).To(Equal(decimal.MustNew(int64(c.hours), 0)), info(i, c.period))
-			g.Expect(pp.Hours()).To(Equal(c.hours), info(i, c.period))
-			g.Expect(pp.MinutesDecimal()).To(Equal(decimal.MustNew(int64(c.minutes), 0)), info(i, c.period))
-			g.Expect(pp.Minutes()).To(Equal(c.minutes), info(i, c.period))
-			g.Expect(pp.SecondsDecimal()).To(Equal(decimal.MustNew(int64(c.seconds), 0)), info(i, c.period))
-			g.Expect(pp.Seconds()).To(Equal(c.seconds), info(i, c.period))
+			expect.Any(pp).Info(i, c.period).ToBe(t, c.period)
+			expect.Any(pp.HoursDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(c.hours), 0))
+			expect.Number(pp.Hours()).Info(i, c.period).ToBe(t, c.hours)
+			expect.Any(pp.MinutesDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(c.minutes), 0))
+			expect.Number(pp.Minutes()).Info(i, c.period).ToBe(t, c.minutes)
+			expect.Any(pp.SecondsDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(c.seconds), 0))
+			expect.Number(pp.Seconds()).Info(i, c.period).ToBe(t, c.seconds)
 
 			pn := NewHMS(-c.hours, -c.minutes, -c.seconds)
 			en := c.period.Negate()
-			g.Expect(pn).To(Equal(en), info(i, en))
-			g.Expect(pn.HoursDecimal()).To(Equal(decimal.MustNew(int64(-c.hours), 0)), info(i, c.period))
-			g.Expect(pn.Hours()).To(Equal(-c.hours), info(i, en))
-			g.Expect(pn.MinutesDecimal()).To(Equal(decimal.MustNew(int64(-c.minutes), 0)), info(i, c.period))
-			g.Expect(pn.Minutes()).To(Equal(-c.minutes), info(i, en))
-			g.Expect(pn.SecondsDecimal()).To(Equal(decimal.MustNew(int64(-c.seconds), 0)), info(i, c.period))
-			g.Expect(pn.Seconds()).To(Equal(-c.seconds), info(i, en))
+			expect.Any(pn).Info(i, c.period).ToBe(t, en)
+			expect.Any(pn.HoursDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(-c.hours), 0))
+			expect.Number(pn.Hours()).Info(i, c.period).ToBe(t, -c.hours)
+			expect.Any(pn.MinutesDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(-c.minutes), 0))
+			expect.Number(pn.Minutes()).Info(i, c.period).ToBe(t, -c.minutes)
+			expect.Any(pn.SecondsDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(-c.seconds), 0))
+			expect.Number(pn.Seconds()).Info(i, c.period).ToBe(t, -c.seconds)
 		})
 	}
 }
@@ -84,8 +82,6 @@ func TestNewHMS(t *testing.T) {
 //-------------------------------------------------------------------------------------------------
 
 func TestNewYMD(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	const largeInt = math.MaxInt32
 
 	cases := []struct {
@@ -101,12 +97,12 @@ func TestNewYMD(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.period), func(t *testing.T) {
 			pp := NewYMD(c.years, c.months, c.days)
-			g.Expect(pp).To(Equal(c.period), info(i, c.period))
-			g.Expect(pp.Years()).To(Equal(c.years), info(i, c.period))
-			g.Expect(pp.Months()).To(Equal(c.months), info(i, c.period))
-			g.Expect(pp.Weeks()).To(Equal(0), info(i, c.period))
-			g.Expect(pp.Days()).To(Equal(c.days), info(i, c.period))
-			g.Expect(pp.DaysIncWeeks()).To(Equal(c.days), info(i, c.period))
+			expect.Any(pp).Info(i, c.period).ToBe(t, c.period)
+			expect.Number(pp.Years()).Info(i, c.period).ToBe(t, c.years)
+			expect.Number(pp.Months()).Info(i, c.period).ToBe(t, c.months)
+			expect.Number(pp.Weeks()).Info(i, c.period).ToBe(t, 0)
+			expect.Number(pp.Days()).Info(i, c.period).ToBe(t, c.days)
+			expect.Number(pp.DaysIncWeeks()).Info(i, c.period).ToBe(t, c.days)
 		})
 	}
 }
@@ -114,8 +110,6 @@ func TestNewYMD(t *testing.T) {
 //-------------------------------------------------------------------------------------------------
 
 func TestNewYMWD(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	const largeInt = math.MaxInt32
 
 	cases := []struct {
@@ -137,31 +131,31 @@ func TestNewYMWD(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.period), func(t *testing.T) {
 			pp := NewYMWD(c.years, c.months, c.weeks, c.days)
-			g.Expect(pp).To(Equal(c.period), info(i, c.period))
-			g.Expect(pp.YearsDecimal()).To(Equal(decimal.MustNew(int64(c.years), 0)), info(i, c.period))
-			g.Expect(pp.Years()).To(Equal(c.years), info(i, c.period))
-			g.Expect(pp.MonthsDecimal()).To(Equal(decimal.MustNew(int64(c.months), 0)), info(i, c.period))
-			g.Expect(pp.Months()).To(Equal(c.months), info(i, c.period))
-			g.Expect(pp.WeeksDecimal()).To(Equal(decimal.MustNew(int64(c.weeks), 0)), info(i, c.period))
-			g.Expect(pp.Weeks()).To(Equal(c.weeks), info(i, c.period))
-			g.Expect(pp.DaysDecimal()).To(Equal(decimal.MustNew(int64(c.days), 0)), info(i, c.period))
-			g.Expect(pp.Days()).To(Equal(c.days), info(i, c.period))
-			g.Expect(pp.DaysIncWeeksDecimal()).To(Equal(decimal.MustNew(int64(7*c.weeks+c.days), 0)), info(i, c.period))
-			g.Expect(pp.DaysIncWeeks()).To(Equal(7*c.weeks+c.days), info(i, c.period))
+			expect.Any(pp).Info(i, c.period).ToBe(t, c.period)
+			expect.Any(pp.YearsDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(c.years), 0))
+			expect.Number(pp.Years()).Info(i, c.period).ToBe(t, c.years)
+			expect.Any(pp.MonthsDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(c.months), 0))
+			expect.Number(pp.Months()).Info(i, c.period).ToBe(t, c.months)
+			expect.Any(pp.WeeksDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(c.weeks), 0))
+			expect.Number(pp.Weeks()).Info(i, c.period).ToBe(t, c.weeks)
+			expect.Any(pp.DaysDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(c.days), 0))
+			expect.Number(pp.Days()).Info(i, c.period).ToBe(t, c.days)
+			expect.Any(pp.DaysIncWeeksDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(7*c.weeks+c.days), 0))
+			expect.Number(pp.DaysIncWeeks()).Info(i, c.period).ToBe(t, 7*c.weeks+c.days)
 
 			pn := NewYMWD(-c.years, -c.months, -c.weeks, -c.days)
 			en := c.period.Negate()
-			g.Expect(pn).To(Equal(en), info(i, en))
-			g.Expect(pn.YearsDecimal()).To(Equal(decimal.MustNew(int64(-c.years), 0)), info(i, en))
-			g.Expect(pn.Years()).To(Equal(-c.years), info(i, en))
-			g.Expect(pn.MonthsDecimal()).To(Equal(decimal.MustNew(int64(-c.months), 0)), info(i, en))
-			g.Expect(pn.Months()).To(Equal(-c.months), info(i, en))
-			g.Expect(pn.WeeksDecimal()).To(Equal(decimal.MustNew(int64(-c.weeks), 0)), info(i, en))
-			g.Expect(pn.Weeks()).To(Equal(-c.weeks), info(i, en))
-			g.Expect(pn.DaysDecimal()).To(Equal(decimal.MustNew(int64(-c.days), 0)), info(i, en))
-			g.Expect(pn.Days()).To(Equal(-c.days), info(i, en))
-			g.Expect(pn.DaysIncWeeksDecimal()).To(Equal(decimal.MustNew(int64(-7*c.weeks-c.days), 0)), info(i, en))
-			g.Expect(pn.DaysIncWeeks()).To(Equal(-7*c.weeks-c.days), info(i, en))
+			expect.Any(pn).Info(i, en).ToBe(t, en)
+			expect.Any(pn.YearsDecimal()).Info(i, en).ToBe(t, decimal.MustNew(int64(-c.years), 0))
+			expect.Number(pn.Years()).Info(i, en).ToBe(t, -c.years)
+			expect.Any(pn.MonthsDecimal()).Info(i, en).ToBe(t, decimal.MustNew(int64(-c.months), 0))
+			expect.Number(pn.Months()).Info(i, en).ToBe(t, -c.months)
+			expect.Any(pn.WeeksDecimal()).Info(i, en).ToBe(t, decimal.MustNew(int64(-c.weeks), 0))
+			expect.Number(pn.Weeks()).Info(i, en).ToBe(t, -c.weeks)
+			expect.Any(pn.DaysDecimal()).Info(i, en).ToBe(t, decimal.MustNew(int64(-c.days), 0))
+			expect.Number(pn.Days()).Info(i, en).ToBe(t, -c.days)
+			expect.Any(pn.DaysIncWeeksDecimal()).Info(i, en).ToBe(t, decimal.MustNew(int64(-7*c.weeks-c.days), 0))
+			expect.Number(pn.DaysIncWeeks()).Info(i, en).ToBe(t, -7*c.weeks-c.days)
 		})
 	}
 }
@@ -169,8 +163,6 @@ func TestNewYMWD(t *testing.T) {
 //-------------------------------------------------------------------------------------------------
 
 func TestSetGet(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	var (
 		two   = decI(2)
 		three = decI(3)
@@ -199,35 +191,35 @@ func TestSetGet(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %v", i, c.field.Byte()), func(t *testing.T) {
 			p1, err := p0.SetField(ten, c.field)
-			g.Expect(err).NotTo(HaveOccurred())
-			g.Expect(p1.YearsDecimal()).To(Equal(c.years))
-			g.Expect(p1.MonthsDecimal()).To(Equal(c.months))
-			g.Expect(p1.WeeksDecimal()).To(Equal(c.weeks))
-			g.Expect(p1.DaysDecimal()).To(Equal(c.days))
-			g.Expect(p1.HoursDecimal()).To(Equal(c.hours))
-			g.Expect(p1.MinutesDecimal()).To(Equal(c.minutes))
-			g.Expect(p1.SecondsDecimal()).To(Equal(c.seconds))
+			expect.Error(err).Info("%d %v", i, c).Not().ToHaveOccurred(t)
+			expect.Any(p1.YearsDecimal()).ToBe(t, c.years)
+			expect.Any(p1.MonthsDecimal()).ToBe(t, c.months)
+			expect.Any(p1.WeeksDecimal()).ToBe(t, c.weeks)
+			expect.Any(p1.DaysDecimal()).ToBe(t, c.days)
+			expect.Any(p1.HoursDecimal()).ToBe(t, c.hours)
+			expect.Any(p1.MinutesDecimal()).ToBe(t, c.minutes)
+			expect.Any(p1.SecondsDecimal()).ToBe(t, c.seconds)
 
 			p2 := p0.SetInt(10, c.field)
-			g.Expect(p2.Years()).To(BeEquivalentTo(c.years.Coef()))
-			g.Expect(p2.Months()).To(BeEquivalentTo(c.months.Coef()))
-			g.Expect(p2.Weeks()).To(BeEquivalentTo(c.weeks.Coef()))
-			g.Expect(p2.Days()).To(BeEquivalentTo(c.days.Coef()))
-			g.Expect(p2.Hours()).To(BeEquivalentTo(c.hours.Coef()))
-			g.Expect(p2.Minutes()).To(BeEquivalentTo(c.minutes.Coef()))
-			g.Expect(p2.Seconds()).To(BeEquivalentTo(c.seconds.Coef()))
+			expect.Number(p2.Years()).ToBe(t, int(c.years.Coef()))
+			expect.Number(p2.Months()).ToBe(t, int(c.months.Coef()))
+			expect.Number(p2.Weeks()).ToBe(t, int(c.weeks.Coef()))
+			expect.Number(p2.Days()).ToBe(t, int(c.days.Coef()))
+			expect.Number(p2.Hours()).ToBe(t, int(c.hours.Coef()))
+			expect.Number(p2.Minutes()).ToBe(t, int(c.minutes.Coef()))
+			expect.Number(p2.Seconds()).ToBe(t, int(c.seconds.Coef()))
 
 			d0 := p0.GetField(c.field)
-			g.Expect(d0).NotTo(Equal(ten))
+			expect.Any(d0).Not().ToBe(t, ten)
 
 			d1 := p1.GetField(c.field)
-			g.Expect(d1).To(Equal(ten))
+			expect.Any(d1).ToBe(t, ten)
 
 			v0 := p0.GetInt(c.field)
-			g.Expect(v0).NotTo(Equal(10))
+			expect.Any(v0).Not().ToBe(t, 10)
 
 			v2 := p2.GetInt(c.field)
-			g.Expect(v2).To(Equal(10))
+			expect.Any(v2).ToBe(t, 10)
 		})
 	}
 }
@@ -235,8 +227,6 @@ func TestSetGet(t *testing.T) {
 //-------------------------------------------------------------------------------------------------
 
 func TestNewDecimal(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	var (
 		largeInt = decI(math.MaxInt64)
 		smallInt = dec(1, decimal.MaxScale)
@@ -269,21 +259,19 @@ func TestNewDecimal(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.period), func(t *testing.T) {
 			pp := MustNewDecimal(c.years, c.months, c.weeks, c.days, c.hours, c.minutes, c.seconds)
-			g.Expect(pp).To(Equal(c.period), info(i, c.period))
-			g.Expect(pp.YearsDecimal()).To(Equal(c.years), info(i, c.period))
-			g.Expect(pp.MonthsDecimal()).To(Equal(c.months), info(i, c.period))
-			g.Expect(pp.WeeksDecimal()).To(Equal(c.weeks), info(i, c.period))
-			g.Expect(pp.DaysDecimal()).To(Equal(c.days), info(i, c.period))
-			g.Expect(pp.HoursDecimal()).To(Equal(c.hours), info(i, c.period))
-			g.Expect(pp.MinutesDecimal()).To(Equal(c.minutes), info(i, c.period))
-			g.Expect(pp.SecondsDecimal()).To(Equal(c.seconds), info(i, c.period))
+			expect.Any(pp).Info(i, c.period).ToBe(t, c.period)
+			expect.Any(pp.YearsDecimal()).Info(i, c.period).ToBe(t, c.years)
+			expect.Any(pp.MonthsDecimal()).Info(i, c.period).ToBe(t, c.months)
+			expect.Any(pp.WeeksDecimal()).Info(i, c.period).ToBe(t, c.weeks)
+			expect.Any(pp.DaysDecimal()).Info(i, c.period).ToBe(t, c.days)
+			expect.Any(pp.HoursDecimal()).Info(i, c.period).ToBe(t, c.hours)
+			expect.Any(pp.MinutesDecimal()).Info(i, c.period).ToBe(t, c.minutes)
+			expect.Any(pp.SecondsDecimal()).Info(i, c.period).ToBe(t, c.seconds)
 		})
 	}
 }
 
 func TestNewDecimal_error1(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		period                     Period
 		years, months, weeks, days decimal.Decimal
@@ -297,23 +285,21 @@ func TestNewDecimal_error1(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.period), func(t *testing.T) {
 			pp, err := NewDecimal(c.years, c.months, c.weeks, c.days, c.hours, c.minutes, c.seconds)
-			g.Expect(err).To(HaveOccurred())
-			g.Expect(err.Error()).To(ContainSubstring("found YMWD/HMS fractions in P0.1Y0.2M0.3W0.4DT0.5H0.6M0.7S"))
-			g.Expect(pp).To(Equal(c.period), info(i, c.period))
-			g.Expect(pp.YearsDecimal()).To(Equal(c.years), info(i, c.period))
-			g.Expect(pp.MonthsDecimal()).To(Equal(c.months), info(i, c.period))
-			g.Expect(pp.WeeksDecimal()).To(Equal(c.weeks), info(i, c.period))
-			g.Expect(pp.DaysDecimal()).To(Equal(c.days), info(i, c.period))
-			g.Expect(pp.HoursDecimal()).To(Equal(c.hours), info(i, c.period))
-			g.Expect(pp.MinutesDecimal()).To(Equal(c.minutes), info(i, c.period))
-			g.Expect(pp.SecondsDecimal()).To(Equal(c.seconds), info(i, c.period))
+			expect.Error(err).Info("%d %v", i, c.period).ToHaveOccurred(t)
+			expect.Error(err).ToContain(t, "found YMWD/HMS fractions in P0.1Y0.2M0.3W0.4DT0.5H0.6M0.7S")
+			expect.Any(pp).Info(i, c.period).ToBe(t, c.period)
+			expect.Any(pp.YearsDecimal()).Info(i, c.period).ToBe(t, c.years)
+			expect.Any(pp.MonthsDecimal()).Info(i, c.period).ToBe(t, c.months)
+			expect.Any(pp.WeeksDecimal()).Info(i, c.period).ToBe(t, c.weeks)
+			expect.Any(pp.DaysDecimal()).Info(i, c.period).ToBe(t, c.days)
+			expect.Any(pp.HoursDecimal()).Info(i, c.period).ToBe(t, c.hours)
+			expect.Any(pp.MinutesDecimal()).Info(i, c.period).ToBe(t, c.minutes)
+			expect.Any(pp.SecondsDecimal()).Info(i, c.period).ToBe(t, c.seconds)
 		})
 	}
 }
 
 func TestNewDecimal_error2(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		years, months, weeks, days decimal.Decimal
 		hours, minutes, seconds    decimal.Decimal
@@ -413,8 +399,8 @@ func TestNewDecimal_error2(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.message), func(t *testing.T) {
 			_, err := NewDecimal(c.years, c.months, c.weeks, c.days, c.hours, c.minutes, c.seconds)
-			g.Expect(err).To(HaveOccurred())
-			g.Expect(err.Error()).To(ContainSubstring(c.message))
+			expect.Error(err).Info("%d %v", i, c.message).ToHaveOccurred(t)
+			expect.Error(err).ToContain(t, c.message)
 		})
 	}
 }
@@ -444,19 +430,16 @@ func testNewOf(t *testing.T, i int, source time.Duration, expected Period) {
 
 func testNewOf1(t *testing.T, i int, source time.Duration, expected Period) {
 	t.Helper()
-	g := NewGomegaWithT(t)
-
 	n := NewOf(source)
 	rev, _ := expected.Duration()
 	info := fmt.Sprintf("%d: source %v expected %+v rev %v", i, source, expected, rev)
-	g.Expect(n).To(Equal(expected), info)
-	g.Expect(rev).To(Equal(source), info)
+	expect.Any(n).Info(info).ToBe(t, expected)
+	expect.Number(rev).Info(info).ToBe(t, source)
 }
 
 //-------------------------------------------------------------------------------------------------
 
 func TestBetween(t *testing.T) {
-	g := NewGomegaWithT(t)
 	now := time.Now()
 
 	cases := []struct {
@@ -515,11 +498,11 @@ func TestBetween(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.expected), func(t *testing.T) {
 			pp := Between(c.a, c.b).Normalise(false)
-			g.Expect(pp).To(Equal(c.expected), info(i, c.expected))
+			expect.Any(pp).Info(i, c.expected).ToBe(t, c.expected)
 
 			pn := Between(c.b, c.a).Normalise(false)
 			en := c.expected.Negate()
-			g.Expect(pn).To(Equal(en), info(i, en))
+			expect.Any(pn).Info(i, en).ToBe(t, en)
 		})
 	}
 }
@@ -527,35 +510,33 @@ func TestBetween(t *testing.T) {
 //-------------------------------------------------------------------------------------------------
 
 func Test_Period64_Sign_Abs_etc(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	z := Zero
 	neg := Period{years: one, months: decI(2), weeks: decI(3), days: decI(4), hours: decI(5), minutes: decI(6), seconds: decI(7), neg: true}
 	pos := Period{years: one, months: decI(2), weeks: decI(3), days: decI(4), hours: decI(5), minutes: decI(6), seconds: decI(7), neg: false}
 
-	g.Expect(z.Negate()).To(Equal(z))
-	g.Expect(pos.Negate()).To(Equal(neg))
-	g.Expect(neg.Negate()).To(Equal(pos))
+	expect.Any(z.Negate()).ToBe(t, z)
+	expect.Any(pos.Negate()).ToBe(t, neg)
+	expect.Any(neg.Negate()).ToBe(t, pos)
 
-	g.Expect(z.Abs()).To(Equal(z))
-	g.Expect(pos.Abs()).To(Equal(pos))
-	g.Expect(neg.Abs()).To(Equal(pos))
+	expect.Any(z.Abs()).ToBe(t, z)
+	expect.Any(pos.Abs()).ToBe(t, pos)
+	expect.Any(neg.Abs()).ToBe(t, pos)
 
-	g.Expect(z.Sign()).To(Equal(0))
-	g.Expect(pos.Sign()).To(Equal(1))
-	g.Expect(neg.Sign()).To(Equal(-1))
+	expect.Number(z.Sign()).ToBe(t, 0)
+	expect.Number(pos.Sign()).ToBe(t, 1)
+	expect.Number(neg.Sign()).ToBe(t, -1)
 
-	g.Expect(z.IsZero()).To(BeTrue())
-	g.Expect(pos.IsZero()).To(BeFalse())
-	g.Expect(neg.IsZero()).To(BeFalse())
+	expect.Bool(z.IsZero()).ToBeTrue(t)
+	expect.Bool(pos.IsZero()).ToBeFalse(t)
+	expect.Bool(neg.IsZero()).ToBeFalse(t)
 
-	g.Expect(z.IsPositive()).To(BeTrue()) // n.b
-	g.Expect(pos.IsPositive()).To(BeTrue())
-	g.Expect(neg.IsPositive()).To(BeFalse())
+	expect.Bool(z.IsPositive()).ToBeTrue(t) // n.b
+	expect.Bool(pos.IsPositive()).ToBeTrue(t)
+	expect.Bool(neg.IsPositive()).ToBeFalse(t)
 
-	g.Expect(z.IsNegative()).To(BeFalse())
-	g.Expect(pos.IsNegative()).To(BeFalse())
-	g.Expect(neg.IsNegative()).To(BeTrue())
+	expect.Bool(z.IsNegative()).ToBeFalse(t)
+	expect.Bool(pos.IsNegative()).ToBeFalse(t)
+	expect.Bool(neg.IsNegative()).ToBeTrue(t)
 }
 
 var (
@@ -599,8 +580,6 @@ func japan(year int, month time.Month, day, hour, min, sec, msec int) time.Time 
 //-------------------------------------------------------------------------------------------------
 
 func Test_OnlyYMWD(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		one    string
 		expect string
@@ -610,13 +589,11 @@ func Test_OnlyYMWD(t *testing.T) {
 	}
 	for i, c := range cases {
 		s := MustParse(c.one).OnlyYMWD()
-		g.Expect(s).To(Equal(MustParse(c.expect)), info(i, c.expect))
+		expect.Any(s).Info(i, c.expect).ToBe(t, MustParse(c.expect))
 	}
 }
 
 func Test_OnlyHMS(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		one    string
 		expect string
@@ -626,6 +603,6 @@ func Test_OnlyHMS(t *testing.T) {
 	}
 	for i, c := range cases {
 		s := MustParse(c.one).OnlyHMS()
-		g.Expect(s).To(Equal(MustParse(c.expect)), info(i, c.expect))
+		expect.Any(s).Info(i, c.expect).ToBe(t, MustParse(c.expect))
 	}
 }

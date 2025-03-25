@@ -6,15 +6,13 @@ package period
 
 import (
 	"fmt"
-	. "github.com/onsi/gomega"
+	"github.com/rickb777/expect"
 	"math"
 	"strings"
 	"testing"
 )
 
 func Test_Normalise(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		input     ISOString
 		precise   ISOString
@@ -82,20 +80,20 @@ func Test_Normalise(t *testing.T) {
 		t.Run(fmt.Sprintf("%d %s", i, c.precise), func(t *testing.T) {
 			p1 := MustParse(c.input)
 			sp1 := p1.Normalise(true)
-			g.Expect(sp1.Period()).To(Equal(c.precise), "precise +ve case")
+			expect.String(sp1.Period()).Info("precise +ve case").ToBe(t, c.precise)
 
 			if !p1.IsZero() {
 				sp1n := p1.Negate().Normalise(true)
-				g.Expect(sp1n.Period()).To(Equal("-"+c.precise), "precise -ve case")
+				expect.String(sp1n.Period()).Info("precise -ve case").ToBe(t, "-"+c.precise)
 			}
 
 			p2 := MustParse(c.input)
 			sp2 := p2.Normalise(false)
-			g.Expect(sp2.Period()).To(Equal(c.imprecise), "approximate +ve case")
+			expect.String(sp2.Period()).Info("approximate +ve case").ToBe(t, c.imprecise)
 
 			if !p2.IsZero() {
 				sp2n := p2.Negate().Normalise(false)
-				g.Expect(sp2n.Period()).To(Equal("-"+c.imprecise), "approximate -ve case")
+				expect.String(sp2n.Period()).Info("approximate -ve case").ToBe(t, "-"+c.imprecise)
 			}
 		})
 	}
@@ -104,8 +102,6 @@ func Test_Normalise(t *testing.T) {
 //-------------------------------------------------------------------------------------------------
 
 func Test_NormaliseDaysToYears(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		input    ISOString
 		expected ISOString
@@ -134,11 +130,11 @@ func Test_NormaliseDaysToYears(t *testing.T) {
 		t.Run(fmt.Sprintf("%d %s", i, c.expected), func(t *testing.T) {
 			p1 := MustParse(c.input)
 			sp1 := p1.NormaliseDaysToYears()
-			g.Expect(sp1.Period()).To(Equal(c.expected), "+ve case")
+			expect.String(sp1.Period()).Info("+ve case").ToBe(t, c.expected)
 
 			if !p1.IsZero() {
 				sp1n := p1.Negate().NormaliseDaysToYears()
-				g.Expect(sp1n.Period()).To(Equal("-"+c.expected), "-ve case")
+				expect.String(sp1n.Period()).Info("-ve case").ToBe(t, "-"+c.expected)
 			}
 		})
 	}
@@ -147,8 +143,6 @@ func Test_NormaliseDaysToYears(t *testing.T) {
 //-------------------------------------------------------------------------------------------------
 
 func Test_SimplifyWeeksToDays(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		input    ISOString
 		expected ISOString
@@ -175,11 +169,11 @@ func Test_SimplifyWeeksToDays(t *testing.T) {
 		t.Run(fmt.Sprintf("%d %s", i, c.expected), func(t *testing.T) {
 			p1 := MustParse(c.input)
 			sp1 := p1.SimplifyWeeksToDays()
-			g.Expect(sp1.Period()).To(Equal(c.expected), "precise +ve case")
+			expect.String(sp1.Period()).Info("precise +ve case").ToBe(t, c.expected)
 
 			if !p1.IsZero() {
 				sp1n := p1.Negate().SimplifyWeeksToDays()
-				g.Expect(sp1n.Period()).To(Equal("-"+c.expected), "precise -ve case")
+				expect.String(sp1n.Period()).Info("precise -ve case").ToBe(t, "-"+c.expected)
 			}
 		})
 	}
@@ -188,8 +182,6 @@ func Test_SimplifyWeeksToDays(t *testing.T) {
 //-------------------------------------------------------------------------------------------------
 
 func Test_Simplify(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	var extremeMinSec = ISOString(fmt.Sprintf("PT%dM0.%s1S", math.MaxInt64, strings.Repeat("0", 18)))
 
 	cases := []struct {
@@ -257,20 +249,20 @@ func Test_Simplify(t *testing.T) {
 		t.Run(fmt.Sprintf("%d %s", i, c.precise), func(t *testing.T) {
 			p1 := MustParse(c.input)
 			sp1 := p1.Simplify(true)
-			g.Expect(sp1.Period()).To(Equal(c.precise), "precise +ve case")
+			expect.String(sp1.Period()).Info("precise +ve case").ToBe(t, c.precise)
 
 			if !p1.IsZero() {
 				sp1n := p1.Negate().Simplify(true)
-				g.Expect(sp1n.Period()).To(Equal("-"+c.precise), "precise -ve case")
+				expect.String(sp1n.Period()).Info("precise -ve case").ToBe(t, "-"+c.precise)
 			}
 
 			p2 := MustParse(c.input)
 			sp2 := p2.Simplify(false)
-			g.Expect(sp2.Period()).To(Equal(c.imprecise), "approximate +ve case")
+			expect.String(sp2.Period()).Info("approximate +ve case").ToBe(t, c.imprecise)
 
 			if !p2.IsZero() {
 				sp2n := p2.Negate().Simplify(false)
-				g.Expect(sp2n.Period()).To(Equal("-"+c.imprecise), "approximate -ve case")
+				expect.String(sp2n.Period()).Info("approximate -ve case").ToBe(t, "-"+c.imprecise)
 			}
 		})
 	}
@@ -279,8 +271,6 @@ func Test_Simplify(t *testing.T) {
 //-------------------------------------------------------------------------------------------------
 
 func Test_normaliseSign(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		expected ISOString
 		input    Period
@@ -346,7 +336,7 @@ func Test_normaliseSign(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.expected), func(t *testing.T) {
 			sp1 := c.input.normaliseSign()
-			g.Expect(sp1.Period()).To(Equal(c.expected))
+			expect.String(sp1.Period()).ToBe(t, c.expected)
 		})
 	}
 }

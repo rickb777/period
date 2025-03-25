@@ -7,14 +7,12 @@ package period
 import (
 	"fmt"
 	"github.com/govalues/decimal"
-	. "github.com/onsi/gomega"
+	"github.com/rickb777/expect"
 	"math"
 	"testing"
 )
 
 func TestParseErrors(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		value    ISOString
 		expected string
@@ -44,18 +42,18 @@ func TestParseErrors(t *testing.T) {
 	for i, c := range cases {
 		t.Run(fmt.Sprintf("%d %s", i, c.value), func(t *testing.T) {
 			_, ep := Parse(c.value)
-			g.Expect(ep).To(HaveOccurred(), info(i, c.value))
-			g.Expect(ep.Error()).To(Equal(c.expvalue+c.expected), info(i, c.value))
+			expect.Error(ep).Info("%d %v", i, c.value).ToHaveOccurred(t)
+			expect.Error(ep).Info("%d %v", i, c.value).ToContain(t, c.expvalue+c.expected)
 
 			_, en := Parse("-" + c.value)
-			g.Expect(en).To(HaveOccurred(), info(i, c.value))
+			expect.Error(en).Info("%d %v", i, c.value).ToHaveOccurred(t)
 			if c.expvalue != "" {
-				g.Expect(en.Error()).To(Equal("-"+c.expvalue+c.expected), info(i, c.value))
+				expect.Error(en).Info("%d %v", i, c.value).ToContain(t, "-"+c.expvalue+c.expected)
 			} else {
-				g.Expect(en.Error()).To(Equal(c.expected), info(i, c.value))
+				expect.Error(en).Info("%d %v", i, c.value).ToContain(t, c.expected)
 			}
 
-			g.Expect(func() { MustParse(c.value) }).To(Panic())
+			expect.Func(func() { MustParse(c.value) }).ToPanic(t)
 		})
 	}
 }
@@ -68,8 +66,6 @@ var (
 )
 
 func TestParsePeriod(t *testing.T) {
-	g := NewGomegaWithT(t)
-
 	cases := []struct {
 		value    ISOString
 		reversed ISOString
@@ -155,9 +151,9 @@ func TestParsePeriod(t *testing.T) {
 		t.Run(fmt.Sprintf("%d %s", i, c.value), func(t *testing.T) {
 			p := MustParse(c.value)
 			s := info(i, c.value)
-			g.Expect(p).To(Equal(c.period), s)
+			expect.Any(p).Info(s).ToBe(t, c.period)
 			// reversal is usually expected to be an identity
-			g.Expect(p.Period()).To(Equal(c.reversed), s+" reversed")
+			expect.Any(p.Period()).Info(s+" reversed").ToBe(t, c.reversed)
 		})
 	}
 }
