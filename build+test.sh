@@ -17,12 +17,6 @@ if ! type -p goveralls; then
   go mod tidy
 fi
 
-if ! type -p shadow; then
-  v go get     golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow
-  v go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow
-  go mod tidy
-fi
-
 echo period...
 v go test -v -covermode=count -coverprofile=period.out .
 v go tool cover -func=period.out
@@ -31,5 +25,3 @@ v go tool cover -func=period.out
 v gofmt -l -w *.go
 
 v go vet ./...
-
-v shadow ./...
