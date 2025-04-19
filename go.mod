@@ -6,7 +6,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/govalues/decimal v0.1.36
 	github.com/rickb777/expect v0.21.0
-	github.com/rickb777/plural v1.4.2
+	github.com/rickb777/plural v1.4.3
 )
 
 require (
