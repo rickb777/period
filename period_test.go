@@ -140,7 +140,7 @@ func TestNewYMWD(t *testing.T) {
 			expect.Number(pp.Weeks()).Info(i, c.period).ToBe(t, c.weeks)
 			expect.Any(pp.DaysDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(c.days), 0))
 			expect.Number(pp.Days()).Info(i, c.period).ToBe(t, c.days)
-			expect.Any(pp.DaysIncWeeksDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(int64(7*c.weeks+c.days), 0))
+			expect.Any(pp.DaysIncWeeksDecimal()).Info(i, c.period).ToBe(t, decimal.MustNew(7*int64(c.weeks)+int64(c.days), 0))
 			expect.Number(pp.DaysIncWeeks()).Info(i, c.period).ToBe(t, 7*c.weeks+c.days)
 
 			pn := NewYMWD(-c.years, -c.months, -c.weeks, -c.days)
@@ -154,7 +154,7 @@ func TestNewYMWD(t *testing.T) {
 			expect.Number(pn.Weeks()).Info(i, en).ToBe(t, -c.weeks)
 			expect.Any(pn.DaysDecimal()).Info(i, en).ToBe(t, decimal.MustNew(int64(-c.days), 0))
 			expect.Number(pn.Days()).Info(i, en).ToBe(t, -c.days)
-			expect.Any(pn.DaysIncWeeksDecimal()).Info(i, en).ToBe(t, decimal.MustNew(int64(-7*c.weeks-c.days), 0))
+			expect.Any(pn.DaysIncWeeksDecimal()).Info(i, en).ToBe(t, decimal.MustNew(-7*int64(c.weeks)-int64(c.days), 0))
 			expect.Number(pn.DaysIncWeeks()).Info(i, en).ToBe(t, -7*c.weeks-c.days)
 		})
 	}

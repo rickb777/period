@@ -182,7 +182,7 @@ func Test_SimplifyWeeksToDays(t *testing.T) {
 //-------------------------------------------------------------------------------------------------
 
 func Test_Simplify(t *testing.T) {
-	var extremeMinSec = ISOString(fmt.Sprintf("PT%dM0.%s1S", math.MaxInt64, strings.Repeat("0", 18)))
+	var extremeMinSec = ISOString(fmt.Sprintf("PT%dM0.%s1S", int64(math.MaxInt64), strings.Repeat("0", 18)))
 
 	cases := []struct {
 		input     ISOString
