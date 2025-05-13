@@ -4,7 +4,7 @@ github.com/govalues/decimal v0.1.36 h1:dojDpsSvrk0ndAx8+saW5h9WDIHdWpIwrH/yhl9ol
 github.com/govalues/decimal v0.1.36/go.mod h1:Ee7eI3Llf7hfqDZtpj8Q6NCIgJy1iY3kH1pSwDrNqlM=
 github.com/magefile/mage v1.15.0 h1:BvGheCMAsG3bWUDbZ8AyXXpCNwU9u5CB6sM+HNb9HYg=
 github.com/magefile/mage v1.15.0/go.mod h1:z5UZb/iS3GoOSn0JgWuiw7dxlurVYTu+/jHXqQg881A=
-github.com/rickb777/expect v0.21.0 h1:d06fVjsz2zGVfbEVRWetStwv/YKaxM4A0t39IzzST88=
-github.com/rickb777/expect v0.21.0/go.mod h1:NQTOf7atJ/89U2FLV1ghRp5XJDdZ8dV+8iW47kJ9q7c=
+github.com/rickb777/expect v0.22.0 h1:xlkFlsnotV2QZ4bsNY03blfJ5yJ4TIf3U43lUh4mQyQ=
+github.com/rickb777/expect v0.22.0/go.mod h1:NQTOf7atJ/89U2FLV1ghRp5XJDdZ8dV+8iW47kJ9q7c=
 github.com/rickb777/plural v1.4.3 h1:YrWiz/jrbcRzjPOIWQZZRQFOBj2e/2CwZpD7BxLu65U=
 github.com/rickb777/plural v1.4.3/go.mod h1:dzZdD8cHnKMz8jud+XKajn8Hz8voyCNgbuozC8pv1N8=

@@ -1,4 +1,4 @@
 #!/bin/bash -ex
-cd "$(dirname $0)"
+cd "$(dirname "$0")"
 go install tool
 mage
