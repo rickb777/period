@@ -2,7 +2,7 @@
 
 //go:build mage
 
-// Build steps for the expect API:
+// Build steps for the period API:
 package main
 
 import (
