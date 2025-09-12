@@ -2,6 +2,7 @@
 
 [![GoDoc](https://img.shields.io/badge/api-Godoc-blue.svg)](https://pkg.go.dev/github.com/rickb777/period)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rickb777/period)](https://goreportcard.com/report/github.com/rickb777/period)
+[![Build](https://github.com/rickb777/period/actions/workflows/go.yml/badge.svg)](https://github.com/rickb777/period/actions)
 [![Issues](https://img.shields.io/github/issues/rickb777/period.svg)](https://github.com/rickb777/period/issues)
 
 Package `period` has types that represent ISO-8601 periods of time.

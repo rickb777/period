@@ -4,8 +4,6 @@ github.com/govalues/decimal v0.1.36 h1:dojDpsSvrk0ndAx8+saW5h9WDIHdWpIwrH/yhl9ol
 github.com/govalues/decimal v0.1.36/go.mod h1:Ee7eI3Llf7hfqDZtpj8Q6NCIgJy1iY3kH1pSwDrNqlM=
 github.com/magefile/mage v1.15.0 h1:BvGheCMAsG3bWUDbZ8AyXXpCNwU9u5CB6sM+HNb9HYg=
 github.com/magefile/mage v1.15.0/go.mod h1:z5UZb/iS3GoOSn0JgWuiw7dxlurVYTu+/jHXqQg881A=
-github.com/rickb777/expect v0.23.0 h1:nK9hTv56H+YV6uTGVzYhXT20ZWlrf7kwUCAbfaQponQ=
-github.com/rickb777/expect v0.23.0/go.mod h1:NQTOf7atJ/89U2FLV1ghRp5XJDdZ8dV+8iW47kJ9q7c=
 github.com/rickb777/expect v0.24.0 h1:IzFxn4jINkVuCmx4jdQP7LxaIBhG60bDVbeGWk3xnzo=
 github.com/rickb777/expect v0.24.0/go.mod h1:jwwS3gmukQ7wPxzEtOhMJEv43UxSwOBE7MUgTt8CX0k=
 github.com/rickb777/plural v1.4.4 h1:OpZU8uRr9P2NkYAbkLMwlKNVJyJ5HvRcRBFyXGJtKGI=
