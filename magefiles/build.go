@@ -2,22 +2,20 @@
 
 //go:build mage
 
-// Build steps for the period API:
+// Build steps for the acceptable API:
 package main
 
 import (
-	"github.com/magefile/mage/sh"
 	"log"
 	"os"
+
+	"github.com/magefile/mage/sh"
 )
 
 var Default = Build
 
 func Build() error {
-	if err := sh.RunV("go", "test", "-covermode=count", "-coverprofile=period.out", "."); err != nil {
-		return err
-	}
-	if err := sh.RunV("go", "tool", "cover", "-func=period.out"); err != nil {
+	if err := sh.RunV("go", "test", "./..."); err != nil {
 		return err
 	}
 	if err := sh.RunV("gofmt", "-l", "-w", "-s", "."); err != nil {
@@ -29,15 +27,34 @@ func Build() error {
 	return nil
 }
 
-// tests the module on both amd64 and i386 architectures
+func Coverage() error {
+	if err := sh.RunV("go", "test", "-cover", "./...", "-coverprofile", "coverage.out", "-coverpkg", "./..."); err != nil {
+		return err
+	}
+	if err := sh.RunV("go", "tool", "cover", "-func", "coverage.out", "-o", "report.out"); err != nil {
+		return err
+	}
+	return nil
+}
+
+// tests the module on both amd64 and i386 architectures for Linux and Windows
 func CrossCompile() error {
+	win := "build"
+	linux := "test"
+	if os.Getenv("GOOS") == "windows" {
+		win = "test"
+		linux = "build"
+	}
+	log.Printf("Testing on Windows\n")
+	if err := sh.RunWithV(map[string]string{"GOOS": "windows"}, "go", win, "./..."); err != nil {
+		return err
+	}
 	for _, arch := range []string{"amd64", "386"} {
-		log.Printf("Testing on %s\n", arch)
-		env := map[string]string{"GOARCH": arch}
-		if _, err := sh.Exec(env, os.Stdout, os.Stderr, "go", "test", "./..."); err != nil {
+		log.Printf("Testing on Linux/%s\n", arch)
+		env := map[string]string{"GOOS": "linux", "GOARCH": arch}
+		if _, err := sh.Exec(env, os.Stdout, os.Stderr, "go", linux, "./..."); err != nil {
 			return err
 		}
-		log.Printf("%s is good.\n\n", arch)
 	}
 	return nil
 }
