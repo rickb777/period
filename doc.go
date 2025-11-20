@@ -18,35 +18,25 @@
 //
 // Example period.ISOString representations:
 //
-// * "P2Y" is two years;
-//
-// * "P6M" is six months;
-//
-// * "P1W" is one week (seven days);
-//
-// * "P4D" is four days;
-//
-// * "PT3H" is three hours.
-//
-// * "PT20M" is twenty minutes.
-//
-// * "PT30S" is thirty seconds.
-//
-// * "-PT30S" or "PT-30S" is minus thirty seconds (implies an "earlier" time).
+//   - "P2Y" is two years;
+//   - "P6M" is six months;
+//   - "P1W" is one week (seven days);
+//   - "P4D" is four days;
+//   - "PT3H" is three hours.
+//   - "PT20M" is twenty minutes.
+//   - "PT30S" is thirty seconds.
+//   - "-PT30S" or "PT-30S" is minus thirty seconds (implies an "earlier" time).
 //
 // These can be combined, for example:
 //
-// * "P3Y11M4W1D" is 3 years, 11 months, 4 weeks and 1 day, which is nearly 4 years.
-//
-// * "P2DT12H" is 2 days and 12 hours.
-//
-// * "P1M-1D" is 1 month minus 1 day. Mixed signs are permitted but may not be widely supported elsewhere.
+//   - "P3Y11M4W1D" is 3 years, 11 months, 4 weeks and 1 day, which is nearly 4 years.
+//   - "P2DT12H" is 2 days and 12 hours.
+//   - "P1M-1D" is 1 month minus 1 day. Mixed signs are permitted but may not be widely supported elsewhere.
 //
 // Also, decimal fractions are supported. To comply with the standard,
 // only the last non-zero component is allowed to have a fraction.
 // For example
 //
-// * "P2.5Y" or "P2,5Y" is 2.5 years; both notations are allowed.
-//
-// * "PT12M7.5S" is 12 minutes and 7.5 seconds.
+//   - "P2.5Y" or "P2,5Y" is 2.5 years; both notations are allowed.
+//   - "PT12M7.5S" is 12 minutes and 7.5 seconds.
 package period
