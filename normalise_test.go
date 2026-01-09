@@ -6,10 +6,11 @@ package period
 
 import (
 	"fmt"
-	"github.com/rickb777/expect"
 	"math"
 	"strings"
 	"testing"
+
+	"github.com/rickb777/expect"
 )
 
 func Test_Normalise(t *testing.T) {
@@ -162,6 +163,7 @@ func Test_SimplifyWeeksToDays(t *testing.T) {
 		// simplified
 		{input: "P1W", expected: "P7D"},
 		{input: "P2W1D", expected: "P15D"},
+		{input: "P2W-2D", expected: "P12D"},
 		{input: "P10W", expected: "P70D"},
 	}
 
