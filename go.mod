@@ -6,8 +6,8 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/govalues/decimal v0.1.36
 	github.com/magefile/mage v1.15.0
-	github.com/rickb777/expect v1.0.7
-	github.com/rickb777/plural v1.4.7
+	github.com/rickb777/expect v1.0.8
+	github.com/rickb777/plural v1.4.8
 )
 
 tool github.com/magefile/mage
