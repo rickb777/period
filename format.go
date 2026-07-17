@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/govalues/decimal"
-	"github.com/rickb777/plural"
+	"github.com/rickb777/plural/v2"
 )
 
 // Period converts the period to ISO-8601 string form.
@@ -94,12 +94,12 @@ func (period Period) FormatLocalised(config FormatLocalisation) string {
 	return strings.Join(parts, ", ")
 }
 
-func formatField(field decimal.Decimal, negate func(string) string, names plural.Plurals) string {
+func formatField(field decimal.Decimal, negate func(string) string, names plural.Cases) string {
 	number, _ := field.Float64()
 	if number < 0 {
-		return negate(names.FormatFloat(float32(-number)))
+		return negate(names.Continuous(-number))
 	}
-	return names.FormatFloat(float32(number))
+	return names.Continuous(number)
 }
 
 func appendNonBlank(parts []string, s string) []string {
@@ -119,8 +119,8 @@ type FormatLocalisation struct {
 	// The plurals provide the localised format names for each field of the period.
 	// Each is a sequence of plural cases where the first match is used, otherwise the last one is used.
 	// The last one must include a "%v" placeholder for the number.
-	YearNames, MonthNames, WeekNames, DayNames plural.Plurals
-	HourNames, MinuteNames, SecondNames        plural.Plurals
+	YearNames, MonthNames, WeekNames, DayNames plural.Cases
+	HourNames, MinuteNames, SecondNames        plural.Cases
 }
 
 // DefaultFormatLocalisation provides the formatting strings needed to format Period values in vernacular English.
@@ -130,12 +130,11 @@ var DefaultFormatLocalisation = FormatLocalisation{
 
 	// YearNames provides the English default format names for the years part of the period.
 	// This is a sequence of plurals where the first match is used, otherwise the last one is used.
-	// The last one must include a "%v" placeholder for the number.
-	YearNames:   plural.FromZero("", "%v year", "%v years"),
-	MonthNames:  plural.FromZero("", "%v month", "%v months"),
-	WeekNames:   plural.FromZero("", "%v week", "%v weeks"),
-	DayNames:    plural.FromZero("", "%v day", "%v days"),
-	HourNames:   plural.FromZero("", "%v hour", "%v hours"),
-	MinuteNames: plural.FromZero("", "%v minute", "%v minutes"),
-	SecondNames: plural.FromZero("", "%v second", "%v seconds"),
+	YearNames:   plural.FromOne("%v year", "%v years"),
+	MonthNames:  plural.FromOne("%v month", "%v months"),
+	WeekNames:   plural.FromOne("%v week", "%v weeks"),
+	DayNames:    plural.FromOne("%v day", "%v days"),
+	HourNames:   plural.FromOne("%v hour", "%v hours"),
+	MinuteNames: plural.FromOne("%v minute", "%v minutes"),
+	SecondNames: plural.FromOne("%v second", "%v seconds"),
 }

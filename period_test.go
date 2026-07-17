@@ -6,11 +6,12 @@ package period
 
 import (
 	"fmt"
-	"github.com/govalues/decimal"
-	"github.com/rickb777/expect"
 	"math"
 	"testing"
 	"time"
+
+	"github.com/govalues/decimal"
+	"github.com/rickb777/expect"
 )
 
 // shorthand functions
@@ -82,7 +83,6 @@ func TestNewHMS(t *testing.T) {
 //-------------------------------------------------------------------------------------------------
 
 func TestNewYMD(t *testing.T) {
-	const largeInt = math.MaxInt32
 
 	cases := []struct {
 		period              Period

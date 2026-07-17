@@ -16,7 +16,6 @@ func (period *Period) Scan(value interface{}) (err error) {
 		return nil
 	}
 
-	err = nil
 	switch v := value.(type) {
 	case []byte:
 		*period, err = Parse(string(v))

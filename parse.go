@@ -6,6 +6,7 @@ package period
 
 import (
 	"fmt"
+
 	"github.com/govalues/decimal"
 )
 
@@ -53,10 +54,11 @@ func (period *Period) Parse(isoPeriod string) error {
 	p := Zero
 
 	remaining := isoPeriod
-	if remaining[0] == '-' {
+	switch remaining[0] {
+	case '-':
 		p.neg = true
 		remaining = remaining[1:]
-	} else if remaining[0] == '+' {
+	case '+':
 		remaining = remaining[1:]
 	}
 
