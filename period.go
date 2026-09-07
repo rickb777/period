@@ -6,8 +6,9 @@ package period
 
 import (
 	"fmt"
-	"github.com/govalues/decimal"
 	"time"
+
+	"github.com/govalues/decimal"
 )
 
 // Period holds a period of time as a set of decimal numbers, one for each field in the ISO-8601
@@ -123,26 +124,17 @@ func NewDecimal(years, months, weeks, days, hours, minutes, seconds decimal.Deci
 
 	if hours.Scale() > 0 {
 		if minutes.Coef() != 0 || seconds.Coef() != 0 {
-			if len(ymwd) > 0 && len(hms) == 0 {
-				hms = append(hms, '/')
-			}
 			hms = append(hms, 'H')
 		}
 	}
 
 	if minutes.Scale() > 0 {
 		if seconds.Coef() != 0 {
-			if len(ymwd) > 0 && len(hms) == 0 {
-				hms = append(hms, '/')
-			}
 			hms = append(hms, 'M')
 		}
 	}
 
 	if seconds.Scale() > 0 && len(ymwd)+len(hms) > 0 {
-		if len(ymwd) > 0 && len(hms) == 0 {
-			hms = append(hms, '/')
-		}
 		hms = append(hms, 'S')
 	}
 
@@ -157,7 +149,11 @@ func NewDecimal(years, months, weeks, days, hours, minutes, seconds decimal.Deci
 	}.normaliseSign()
 
 	if len(ymwd)+len(hms) > 0 {
-		err = fmt.Errorf("only the least significant field can have a fraction; found %s%s fractions in %s", string(ymwd), string(hms), p)
+		sep := ""
+		if len(ymwd) > 0 && len(hms) > 0 {
+			sep = "/"
+		}
+		err = fmt.Errorf("only the least significant field can have a fraction; found %s%s%s fractions in %s", string(ymwd), sep, string(hms), p)
 	}
 
 	return p, err
