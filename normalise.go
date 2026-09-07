@@ -9,7 +9,6 @@ var (
 	twelve      = decimal.MustNew(12, 0)
 	twentyFour  = decimal.MustNew(24, 0)
 	sixty       = decimal.MustNew(60, 0)
-	threeSixSix = decimal.MustNew(366, 0)
 	daysPerYear = decimal.MustNew(3652425, 4) // by the Gregorian rule
 )
 
@@ -60,7 +59,8 @@ func (period Period) NormaliseDaysToYears() Period {
 
 	days := period.DaysIncWeeksDecimal()
 
-	if days.Cmp(threeSixSix) < 0 {
+	// the threshold is one Gregorian year, not 366 days
+	if days.Cmp(daysPerYear) < 0 {
 		return period
 	}
 
