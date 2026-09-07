@@ -121,6 +121,9 @@ func Test_NormaliseDaysToYears(t *testing.T) {
 		{input: "PT1S", expected: "PT1S"},
 
 		{input: "P365D", expected: "P365D"},
+		{input: "P365.2425D", expected: "P1Y"},
+		{input: "P365.5D", expected: "P1Y0.2575D"},
+		{input: "P52W1.2425D", expected: "P1Y"},
 		{input: "P366D", expected: "P1Y0.7575D"},
 		{input: "P367D", expected: "P1Y1.7575D"},
 		{input: "P1461D", expected: "P4Y0.03D"},
