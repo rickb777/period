@@ -6,6 +6,7 @@ package period
 
 import (
 	"errors"
+	"math"
 	"time"
 
 	"github.com/govalues/decimal"
@@ -219,7 +220,21 @@ func totalHrMinSec(period Period) (time.Duration, bool) {
 	hh, okh := fieldDuration(period.hours, int64(time.Hour))
 	mm, okm := fieldDuration(period.minutes, int64(time.Minute))
 	ss, oks := fieldDuration(period.seconds, int64(time.Second))
-	return time.Duration(hh + mm + ss), okh && okm && oks
+	total, okt := sumTotal(hh, mm, ss)
+	return time.Duration(total), okh && okm && oks && okt
+}
+
+// sumTotal adds the values, returning false if the total is outside the int64 range.
+func sumTotal(values ...int64) (int64, bool) {
+	var total int64
+	for _, v := range values {
+		sum := total + v
+		if (v > 0 && sum < total) || (v < 0 && sum > total) {
+			return 0, false
+		}
+		total = sum
+	}
+	return total, true
 }
 
 func fieldDuration(field decimal.Decimal, factor int64) (int64, bool) {
@@ -230,8 +245,16 @@ func fieldDuration(field decimal.Decimal, factor int64) (int64, bool) {
 	for i := field.Scale(); i > 0; i-- {
 		factor /= 10
 	}
+	if factor <= 0 {
+		return 0, false
+	}
 
-	return int64(field.Sign()) * int64(field.Coef()) * factor, factor > 0
+	coef := field.Coef()
+	if coef > uint64(math.MaxInt64)/uint64(factor) {
+		return 0, false
+	}
+
+	return int64(field.Sign()) * int64(coef) * factor, true
 }
 
 func wholeCalendarValues(period Period) bool {
