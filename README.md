@@ -1,7 +1,6 @@
 # period
 
 [![GoDoc](https://img.shields.io/badge/api-Godoc-blue.svg)](https://pkg.go.dev/github.com/rickb777/period)
-[![Go Report Card](https://goreportcard.com/badge/github.com/rickb777/period)](https://goreportcard.com/report/github.com/rickb777/period)
 [![Build](https://github.com/rickb777/period/actions/workflows/go.yml/badge.svg)](https://github.com/rickb777/period/actions)
 [![Coverage](https://coveralls.io/repos/github/rickb777/period/badge.svg?branch=main)](https://coveralls.io/github/rickb777/period?branch=main)
 [![Issues](https://img.shields.io/github/issues/rickb777/period.svg)](https://github.com/rickb777/period/issues)
@@ -23,7 +22,7 @@ The API is now stable for v1.
 
 ## See Also
 
-* [date](https://pkg.go.dev/github.com/rickb777/date) handles date and wall clock representations, along with date ranges and time spans.
+* [date](https://pkg.go.dev/github.com/rickb777/date/v2) handles date and wall clock representations, along with date ranges and time spans.
 
 ## Upgrading
 
