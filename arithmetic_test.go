@@ -329,6 +329,18 @@ func Test_Duration(t *testing.T) {
 		{"P292Y", 292 * oneYearApprox, false}, // time.Duration represents up to 292 years
 		// long second spans
 		{"PT86400000S", 86400000 * time.Second, true},
+
+		// the top of the convertible range; beyond it, the conversion is not precise
+		{"PT9223372036S", 9223372036 * time.Second, true},
+		{"PT9223372037S", 0, false},
+		{"PT153722867M", 153722867 * time.Minute, true},
+		{"PT153722868M", 0, false},
+		{"PT2562047H", 2562047 * time.Hour, true},
+		{"PT2562048H", 0, false},
+		{"PT2562047H47M16S", 2562047*time.Hour + 47*time.Minute + 16*time.Second, true},
+		{"PT2562047H47M17S", 0, false},
+		{"PT-2562047H-47M-17S", 0, false},
+		{"PT1H-153722867M-9223372036S", 0, false},
 	}
 
 	for i, c := range cases {
