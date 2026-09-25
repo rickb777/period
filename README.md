@@ -10,8 +10,8 @@ Package `period` has types that represent ISO-8601 periods of time.
 
 The two core types are 
 
- * `ISOString` - an ISO-8601 string
- * `Period` - a struct with the seven numbers years, months, weeks, days, hours, minutes and seconds.
+ * `ISOString` - an ISO-8601 string such as "P2.5Y"
+ * `Period` - a struct with the seven numbers: years, months, weeks, days, hours, minutes and seconds.
 
 These two can be converted to the other.
 
@@ -20,6 +20,10 @@ These two can be converted to the other.
 ## Status
 
 The API is now stable for v1.
+
+## See Also
+
+* [date](https://pkg.go.dev/github.com/rickb777/date) handles date and wall clock representations, along with date ranges and time spans.
 
 ## Upgrading
 
