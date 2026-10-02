@@ -314,6 +314,8 @@ func Test_Duration(t *testing.T) {
 		{"PT0.00000001H", 36 * time.Microsecond, true},
 		{"PT0.00000000001H", 36 * time.Nanosecond, true},
 		{"PT0.0000000000001H", 0, false},
+		{"PT1.0000000000001H", time.Hour, false},
+		{"PT1.000000000001H", time.Hour + 3*time.Nanosecond, false},
 		{"PT3220H", 3220 * time.Hour, true},
 		{"PT1H-1M-1S", 3539 * time.Second, true},
 
