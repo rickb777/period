@@ -6,7 +6,7 @@ package period
 
 import (
 	"errors"
-	"math"
+	"math/big"
 	"time"
 
 	"github.com/govalues/decimal"
@@ -241,20 +241,29 @@ func fieldDuration(field decimal.Decimal, factor int64) (int64, bool) {
 	if field.Coef() == 0 {
 		return 0, true
 	}
-
-	for i := field.Scale(); i > 0; i-- {
-		factor /= 10
-	}
 	if factor <= 0 {
 		return 0, false
 	}
 
-	coef := field.Coef()
-	if coef > uint64(math.MaxInt64)/uint64(factor) {
+	// coef * factor / 10^scale. Dividing the factor alone truncates it to 0
+	// once the scale passes the factor's trailing zeros, and the coefficient
+	// is discarded with it. 10.1234567891 seconds became 0.
+	prod := new(big.Int).Mul(
+		new(big.Int).SetUint64(field.Coef()),
+		big.NewInt(factor),
+	)
+	exact := true
+	if scale := field.Scale(); scale > 0 {
+		div := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(scale)), nil)
+		q, rem := new(big.Int).QuoRem(prod, div, new(big.Int))
+		prod = q
+		exact = rem.Sign() == 0
+	}
+	if !prod.IsInt64() || prod.Sign() == 0 {
 		return 0, false
 	}
 
-	return int64(field.Sign()) * int64(coef) * factor, true
+	return int64(field.Sign()) * prod.Int64(), exact
 }
 
 func wholeCalendarValues(period Period) bool {
