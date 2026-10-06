@@ -586,6 +586,7 @@ func Test_OnlyYMWD(t *testing.T) {
 	}{
 		{"P1Y2M3DT4H5M6S", "P1Y2M3D"},
 		{"-P6Y5M4DT3H2M1S", "-P6Y5M4D"},
+		{"-PT3H2M1S", "P0D"},
 	}
 	for i, c := range cases {
 		s := MustParse(c.one).OnlyYMWD()
@@ -600,6 +601,7 @@ func Test_OnlyHMS(t *testing.T) {
 	}{
 		{"P1Y2M3DT4H5M6S", "PT4H5M6S"},
 		{"-P6Y5M4DT3H2M1S", "-PT3H2M1S"},
+		{"-P6Y5M4D", "P0D"},
 	}
 	for i, c := range cases {
 		s := MustParse(c.one).OnlyHMS()

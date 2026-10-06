@@ -236,13 +236,21 @@ func (period Period) Negate() Period {
 // OnlyYMWD returns the period with only the year, month, week and day fields.
 // The hour, minute and second fields are zeroed.
 func (period Period) OnlyYMWD() Period {
-	return Period{neg: period.neg, years: period.years, months: period.months, weeks: period.weeks, days: period.days}
+	p := Period{neg: period.neg, years: period.years, months: period.months, weeks: period.weeks, days: period.days}
+	if p.IsZero() {
+		return Zero
+	}
+	return p
 }
 
 // OnlyHMS returns the period with only the hour, minute and second fields.
 // The year, month, week and day fields are zeroed.
 func (period Period) OnlyHMS() Period {
-	return Period{neg: period.neg, hours: period.hours, minutes: period.minutes, seconds: period.seconds}
+	p := Period{neg: period.neg, hours: period.hours, minutes: period.minutes, seconds: period.seconds}
+	if p.IsZero() {
+		return Zero
+	}
+	return p
 }
 
 //-------------------------------------------------------------------------------------------------
