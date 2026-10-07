@@ -203,9 +203,16 @@ func (period Period) Duration() (time.Duration, bool) {
 		return 0, true
 	}
 	daysE9, ok1 := totalDaysApproxE9(period)
-	ymwd := time.Duration(daysE9 * secondsPerDay)
 	hms, ok2 := totalHrMinSec(period)
-	return sign * (ymwd + hms), ymwd == 0 && ok1 && ok2
+	ymwd := daysE9 * secondsPerDay
+	if ymwd/secondsPerDay != daysE9 {
+		return 0, false
+	}
+	total, ok3 := sumTotal(ymwd, int64(hms))
+	if !ok3 {
+		return 0, false
+	}
+	return sign * time.Duration(total), ymwd == 0 && ok1 && ok2
 }
 
 func totalDaysApproxE9(period Period) (int64, bool) {

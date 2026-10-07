@@ -333,6 +333,10 @@ func Test_Duration(t *testing.T) {
 		{"P1Y", oneYearApprox, false},
 		{"P0.1Y", oneYearApprox / 10, false},
 		{"P292Y", 292 * oneYearApprox, false}, // time.Duration represents up to 292 years
+		{"P300Y", 0, false},
+		{"P106751D", 106751 * 24 * time.Hour, false},
+		{"P106752D", 0, false},
+		{"P106751DT24H", 0, false},
 		// long second spans
 		{"PT86400000S", 86400000 * time.Second, true},
 
