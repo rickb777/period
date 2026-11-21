@@ -226,6 +226,20 @@ func TestSetGet(t *testing.T) {
 
 //-------------------------------------------------------------------------------------------------
 
+func TestSetFieldPreservesNegativeSign(t *testing.T) {
+	p, err := Parse("-P1Y2M3DT4H5M6S")
+	expect.Error(err).Not().ToHaveOccurred(t)
+
+	q, err := p.SetField(decI(274), Month)
+	expect.Error(err).Not().ToHaveOccurred(t)
+	expect.String(q.String()).ToBe(t, "-P1Y274M3DT4H5M6S")
+	expect.Bool(q.IsNegative()).ToBeTrue(t)
+	expect.Number(q.Months()).ToBe(t, -274)
+	expect.Number(q.Seconds()).ToBe(t, -6)
+}
+
+//-------------------------------------------------------------------------------------------------
+
 func TestNewDecimal(t *testing.T) {
 	var (
 		largeInt = decI(math.MaxInt64)
