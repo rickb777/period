@@ -409,22 +409,34 @@ func (period Period) SetInt(value int, field Designator) Period {
 //
 // A panic arises if the field is unknown.
 func (period Period) SetField(value decimal.Decimal, field Designator) (Period, error) {
+	// A period has a single sign, so replace the field magnitude and then
+	// restore the sign of the period.
+	if period.neg {
+		value = value.Abs()
+	}
 	switch field {
 	case Year:
-		return NewDecimal(value, period.months, period.weeks, period.days, period.hours, period.minutes, period.seconds)
+		return period.withSign(NewDecimal(value, period.months, period.weeks, period.days, period.hours, period.minutes, period.seconds))
 	case Month:
-		return NewDecimal(period.years, value, period.weeks, period.days, period.hours, period.minutes, period.seconds)
+		return period.withSign(NewDecimal(period.years, value, period.weeks, period.days, period.hours, period.minutes, period.seconds))
 	case Week:
-		return NewDecimal(period.years, period.months, value, period.days, period.hours, period.minutes, period.seconds)
+		return period.withSign(NewDecimal(period.years, period.months, value, period.days, period.hours, period.minutes, period.seconds))
 	case Day:
-		return NewDecimal(period.years, period.months, period.weeks, value, period.hours, period.minutes, period.seconds)
+		return period.withSign(NewDecimal(period.years, period.months, period.weeks, value, period.hours, period.minutes, period.seconds))
 	case Hour:
-		return NewDecimal(period.years, period.months, period.weeks, period.days, value, period.minutes, period.seconds)
+		return period.withSign(NewDecimal(period.years, period.months, period.weeks, period.days, value, period.minutes, period.seconds))
 	case Minute:
-		return NewDecimal(period.years, period.months, period.weeks, period.days, period.hours, value, period.seconds)
+		return period.withSign(NewDecimal(period.years, period.months, period.weeks, period.days, period.hours, value, period.seconds))
 	case Second:
-		return NewDecimal(period.years, period.months, period.weeks, period.days, period.hours, period.minutes, value)
+		return period.withSign(NewDecimal(period.years, period.months, period.weeks, period.days, period.hours, period.minutes, value))
 	}
 
 	panic(field)
+}
+
+func (period Period) withSign(p Period, err error) (Period, error) {
+	if period.neg && !p.IsZero() {
+		p = p.Negate()
+	}
+	return p, err
 }
